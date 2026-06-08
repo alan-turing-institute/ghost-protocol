@@ -48,4 +48,15 @@ The reference point is the centre of the green cross.
 
 ## CCTV camera on the ceiling
 
-(??, 3.66, 2.48)
+(1.14, 3.66, 2.48)
+
+Reference point is (roughly!) the centre of the bulbous glass bit.
+
+## Taped cross on the floor
+
+(1.84, 3.71, 0)
+
+## Inner top right of main entrance framework
+
+(1.77, 2.22, 0)
+
