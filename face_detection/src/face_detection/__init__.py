@@ -1,10 +1,12 @@
 """
-face_detection: 
+face_detection: real-time face and eye landmark detection.
 """
 
 from __future__ import annotations
 
 from importlib.metadata import version
 
-__all__ = ("__version__",)
+from face_detection.detector import FaceResult, StereoResult, run_stereo_stream, run_stream
+
+__all__ = ("__version__", "FaceResult", "StereoResult", "run_stereo_stream", "run_stream")
 __version__ = version(__name__)
