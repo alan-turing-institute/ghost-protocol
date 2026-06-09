@@ -58,5 +58,5 @@ Reference point is (roughly!) the centre of the bulbous glass bit.
 
 ## Inner top right of main entrance framework
 
-(1.77, 2.22, 0)
+(1.77, 2.22, 9.4)
 

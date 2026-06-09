@@ -1,0 +1,154 @@
+% -*- TeX-engine: luatex; -*-
+\documentclass{article}
+\usepackage{ttn}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage[Ragged, size=footnote, shape=up, alerton]{sidenotesplus}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{siunitx}
+%% 
+%%\usepackage[style=authoryear]{biblatex}
+%%\addbibresource{notes.bib}
+%%
+%%
+%% \defn takes an optional star and an optional argument.
+%% If the optional argument is present, it is used for the marginal note; if the argument is missing, the default is the mandatory argument. if the command is starred, no marginal note is made. 
+%% 
+\title{The pinhole camera model}
+\author{James Geddes}
+\date{\today}
+%%
+\renewcommand{\vec}[1]{\mathbf{#1}}
+\begin{document}%\maketitle
+\maketitle
+
+\begin{marginfigure}
+\includegraphics[width=\marginparwidth]{fig1.pdf}
+\end{marginfigure}
+
+A camera is defined by: its location, $\vec{c}$; a unit vector,
+$\hat{\vec{n}}$, pointing in the direction of view; a unit vector,
+$\hat{\vec{u}}$, orthogonal to $\hat{\vec{n}}$ and defining the ``horizontal'' of
+the image plane; and a ``focal length,'' $f$.  
+
+The image of a point $\vec{p}$ (in the real world) is a pair, $(u,v)$ (on
+the image taken by the camera) determined as follows.
+\begin{enumerate}
+\item Compute $d = (\vec{p}-\vec{c})\cdot\hat{\vec{n}}$, the distance from the
+  camera to a plane orthogonal to $\hat{\vec{n}}$ containing~$\vec{p}$;
+\item Compute $\vec{p}/d - \hat{\vec{n}}$, a vector lying in the above
+  plane scaled by the distance to the camera;
+\item Project onto the ``image axes,'' and scale to obtain
+\begin{equation*}
+  \begin{split}
+    u &= f \bigl( \vec{p}/d - \hat{\vec{n}} \bigr) \cdot\hat{\vec{u}} \\
+      &= (\vec{p}\cdot\hat{\vec{u}})f/d,
+  \end{split}
+\end{equation*}
+  and
+\begin{equation*}
+  \begin{split}
+    y &= \vec{p}\cdot(\hat{\vec{u}}\times\hat{\vec{n}})f/d. \\
+  \end{split}
+\end{equation*}
+\end{enumerate}
+
+Typically, the camera's orientation is expressed as a rotation matrix,
+$\vec{R}$, so that $\hat{\vec{n}} = \vec{R}\hat{\vec{y}}$ (where
+$\hat{\vec{y}}$ is the unit vector in the $y$-direction) and
+$\hat{\vec{u}}=\vec{R}\hat{\vec{x}}$ (likewise).
+
+Both the unit vectors and the rotation matrix are easy to write down
+but involve a constraint. Thus, they are not convenient
+parametrisations of the aspect of the camera. The usual alternative is
+the Euler angles. We use the following convention, based on the way
+one imagines that the camera is physically oriented:
+\begin{enumerate}
+\item $\alpha$ is the rotation around the $z$-axis (this being the
+  principal axis of the tripod). Convention is right-handed, so ``from
+  $x$ to $y$;'' that is, the original $\hat{\vec{y}}$ will end up with
+  a small $-\hat{\vec{x}}$ component.
+\item $\beta$ now rotates about the \emph{new} $x$-axis (corresponding
+  to tilting the camera up or down). A positive $\beta$ is upwards. 
+\item Finally, $\gamma$ rotates about the resulting $y$-axis
+  (corresponding to a change in the ``horizontal,'' relative to the
+  camera). A positive $\gamma$ is a clockwise tilt, looking from the
+  back of the camera.
+\end{enumerate}
+(Following Wikipedia, the above convention would be written
+$z$-$x'$-$y''$; these are sometimes called Tait-Bryan angles, although
+even here there are multiple conventions, depending on the order of
+the axes.)
+
+\appendix
+\section*{Conversions}
+\subsection*{The rotation matrix in terms of the Euler angles}
+
+(Thanks Claude.)
+\begin{equation}
+  R = \left(
+  \begin{matrix}
+    \cos\alpha \cos\gamma - \sin\alpha \sin\beta \sin\gamma
+    & -\sin\alpha \cos\beta
+    & \cos\alpha \sin\gamma + \sin\alpha \sin\beta \cos\gamma \\
+    \sin\alpha \cos\gamma + \cos\alpha \sin\beta \sin\gamma
+    & \cos\alpha \cos\beta
+    & \sin\alpha \sin\gamma - \cos\alpha \sin\beta \cos\gamma \\
+    -\cos\beta \sin\gamma
+    & \sin\beta
+    & \cos\beta \cos\gamma
+  \end{matrix}
+  \right)
+\end{equation}
+
+In terms of the individual rotations,
+\begin{equation}
+  R = R_z(\alpha) R_x(\beta) R_y(\gamma), 
+\end{equation}
+where
+\begin{equation}
+  \begin{split}
+    R_z(\alpha) &= 
+    \left(\begin{matrix}
+      \cos\alpha & -\sin\alpha & 0 \\
+      \sin\alpha & \cos\alpha & 0 \\
+      0 & 0 & 1
+    \end{matrix}\right), \\
+    R_x(\beta) &= 
+    \left(\begin{matrix}
+      1 & 0 & 0 \\
+      0 & \cos\beta & -\sin\beta \\
+      0 & \sin\beta & \cos\beta 
+    \end{matrix}\right), \\
+    R_y(\gamma) &= 
+    \left(\begin{matrix}
+      \cos\gamma & 0 & \sin\gamma \\
+      0 & 1 & 0 \\
+      -\sin\gamma & 0 & \cos\gamma 
+    \end{matrix}\right).
+  \end{split}
+\end{equation}
+
+\subsection*{The unit normals in terms of the rotation matrix}
+
+In fact, the unit normals (to the rotated camera), expressed in the
+world coordinate system, are just the columns of the rotation matrix.
+
+\subsection*{The Euler angles from the rotration matrix}
+
+Writing $R_{ij}$ for the $i$th row and $j$th column, indexed from zero:
+
+\begin{equation}
+  \begin{split}
+    \alpha &= \arctan(-R_{01}/ R_{11}) \\
+    \beta  &= \arcsin(R_{21}) \\
+    \gamma &= \arctan(-R_{20}/ R_{22})
+  \end{split}
+\end{equation}
+
+In practice, instead of $\arctan(-y/x)$ in the above we use the
+function ``\texttt{atan2(y,x)}'' which ensures that the angle is in
+the correct range. (See Wikipedia.)
+
+\end{document}
