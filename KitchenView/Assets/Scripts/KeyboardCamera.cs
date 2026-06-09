@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class KeyboardCameraController : MonoBehaviour
 {
-    public float moveSpeed = 5f;
+    public float moveSpeed = 2f;
     public float fastMoveSpeed = 15f;
     public float lookSpeed = 2f;
 

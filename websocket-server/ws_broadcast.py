@@ -1,6 +1,7 @@
 import asyncio
 import websockets
 import socket
+import sys
 
 
 def get_local_ip():
@@ -30,10 +31,9 @@ async def handler(websocket):
         print(f"[-] {addr} disconnected  ({len(connected)} total)")
 
 
-async def serve():
+async def serve(port):
     local_ip = get_local_ip()
 
-    port = 8765
     print(f"WebSocket broadcast server running")
     print(f"  Local:   ws://localhost:{port}")
     print(f"  Network: ws://{local_ip}:{port}")
@@ -43,7 +43,7 @@ async def serve():
 
 
 def main():
-    asyncio.run(serve())
+    asyncio.run(serve(sys.argv[1]))
 
 
 if __name__ == "__main__":
