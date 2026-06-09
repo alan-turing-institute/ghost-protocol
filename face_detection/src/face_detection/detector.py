@@ -17,14 +17,15 @@ import numpy as np
 
 _MODEL_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
 _IOU_THRESHOLD = 0.3  # minimum overlap to consider a detection the same face
+_DETECT_WIDTH = 320  # downscale to this width before detection for speed
 
 
 @dataclass
 class FaceResult:
     """Detected face with eye coordinates in pixel space."""
 
-    left_eye: tuple[float, float]       # (x, y) pixels
-    right_eye: tuple[float, float]      # (x, y) pixels
+    left_eye: tuple[float, float]  # (x, y) pixels
+    right_eye: tuple[float, float]  # (x, y) pixels
     bbox: tuple[float, float, float, float]  # (x, y, w, h) pixels
     frame_width: int
     frame_height: int
@@ -56,7 +57,9 @@ def _iou(box_a: np.ndarray, box_b: np.ndarray) -> float:
     return float(inter / union) if union > 0 else 0.0
 
 
-def _face_result(face: np.ndarray, w: int, h: int, frame_index: int, timestamp_ms: int) -> FaceResult:
+def _face_result(
+    face: np.ndarray, w: int, h: int, frame_index: int, timestamp_ms: int
+) -> FaceResult:
     # YuNet row: [x, y, w, h, re_x, re_y, le_x, le_y, nose_x, nose_y, rm_x, rm_y, lm_x, lm_y, score]
     return FaceResult(
         left_eye=(float(face[6]), float(face[7])),
@@ -75,8 +78,15 @@ def _annotate(frame: np.ndarray, face: FaceResult) -> np.ndarray:
     cv2.rectangle(out, (x, y), (x + w, y + h), (0, 255, 0), 2)
     for point in (face.left_eye, face.right_eye):
         cv2.circle(out, (int(point[0]), int(point[1])), 4, (0, 0, 255), -1)
-    cv2.putText(out, f"f{face.frame_index} t{face.timestamp_ms}ms",
-                (x, y - 8), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+    cv2.putText(
+        out,
+        f"f{face.frame_index} t{face.timestamp_ms}ms",
+        (x, y - 8),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.5,
+        (0, 255, 0),
+        1,
+    )
     return out
 
 
@@ -94,7 +104,9 @@ class FaceTracker:
         )
         self._tracked_box: np.ndarray | None = None  # [x, y, w, h] of current target
 
-    def update(self, frame: np.ndarray, frame_index: int, timestamp_ms: int) -> FaceResult | None:
+    def update(
+        self, frame: np.ndarray, frame_index: int, timestamp_ms: int
+    ) -> FaceResult | None:
         h, w = frame.shape[:2]
         self._detector.setInputSize((w, h))
         _, faces = self._detector.detect(frame)
@@ -125,8 +137,8 @@ def _download_model() -> str:
     model_path = Path.home() / ".cache" / "yunet" / "face_detection_yunet_2023mar.onnx"
     if not model_path.exists():
         model_path.parent.mkdir(parents=True, exist_ok=True)
-        print(f"Downloading YuNet model to {model_path}...")  # noqa: T201
-        urllib.request.urlretrieve(_MODEL_URL, model_path)  # noqa: S310
+        print(f"Downloading YuNet model to {model_path}...")
+        urllib.request.urlretrieve(_MODEL_URL, model_path)
     return str(model_path)
 
 
@@ -247,6 +259,7 @@ def _tcp_camera_worker(
 
             frame = cv2.imdecode(np.frombuffer(jpeg, dtype=np.uint8), cv2.IMREAD_COLOR)
             if frame is None:
+                sock.sendall(b"Done!\n")
                 continue
 
             h, w = frame.shape[:2]
@@ -257,11 +270,55 @@ def _tcp_camera_worker(
             face = tracker.update(frame, frame_index, timestamp_ms)
             result_queue.put((frame_index, face))
             frame_index += 1
+            sock.sendall(b"Done!\n")  # ACK — phone may now send next frame
     except EOFError:
         pass
     finally:
         sock.close()
         result_queue.put(None)
+
+
+def run_tcp_stream(
+    host: str,
+    port: int,
+    on_face: Callable[[FaceResult], None] | None = None,
+) -> None:
+    """Connect to a single TCP JPEG stream and call on_face for each detected face."""
+
+    time_start = time.time()
+    if on_face is None:
+        on_face = print  # type: ignore[assignment]
+
+    queue: Queue = Queue()  # type: ignore[type-arg]
+    stop_event = threading.Event()
+    t = threading.Thread(
+        target=_tcp_camera_worker, args=(host, port, queue, stop_event), daemon=True
+    )
+    t.start()
+
+    print(f"Connecting to {host}:{port}...")
+    frame_count = 0
+    try:
+        while True:
+            item = queue.get(timeout=10.0)
+            if item is None:
+                print("Connection closed.")
+                break
+            _, face = item
+            frame_count += 1
+            if face is not None:
+                on_face(face)
+    except Empty:
+        print("Timed out waiting for frames.")
+    finally:
+        stop_event.set()
+        t.join()
+        time_end = time.time()
+        time_total = time_end - time_start
+        per_image = time_total / frame_count if frame_count else 0
+        print(
+            f"Time taken: {time_total:.2f}s  Frames: {frame_count}  Time per image: {per_image:.4f}s"
+        )
 
 
 def run_tcp_stereo_stream(
@@ -273,16 +330,25 @@ def run_tcp_stereo_stream(
 ) -> None:
     """Connect to two TCP JPEG streams and emit paired StereoResults."""
     if on_stereo is None:
+
         def on_stereo(r: StereoResult) -> None:
             if r.camera_0 is not None or r.camera_1 is not None:
-                print(r)  # noqa: T201
+                print(r)
 
     queue_0: Queue = Queue()  # type: ignore[type-arg]
     queue_1: Queue = Queue()  # type: ignore[type-arg]
     stop_event = threading.Event()
 
-    t0 = threading.Thread(target=_tcp_camera_worker, args=(host_0, port_0, queue_0, stop_event), daemon=True)
-    t1 = threading.Thread(target=_tcp_camera_worker, args=(host_1, port_1, queue_1, stop_event), daemon=True)
+    t0 = threading.Thread(
+        target=_tcp_camera_worker,
+        args=(host_0, port_0, queue_0, stop_event),
+        daemon=True,
+    )
+    t1 = threading.Thread(
+        target=_tcp_camera_worker,
+        args=(host_1, port_1, queue_1, stop_event),
+        daemon=True,
+    )
     t0.start()
     t1.start()
 
@@ -300,61 +366,14 @@ def run_tcp_stereo_stream(
             frame_index_0, face_0 = item_0
             _, face_1 = item_1
 
-            on_stereo(StereoResult(
-                frame_index=frame_index_0,
-                camera_0=face_0,
-                camera_1=face_1,
-            ))
+            on_stereo(
+                StereoResult(
+                    frame_index=frame_index_0,
+                    camera_0=face_0,
+                    camera_1=face_1,
+                )
+            )
     finally:
         stop_event.set()
         t0.join()
         t1.join()
-
-
-def run_stereo_stream(
-    source_0: int | str,
-    source_1: int | str,
-    on_stereo: Callable[[StereoResult], None] | None = None,
-) -> None:
-    """Run face detection on two sources in parallel and emit paired StereoResults."""
-    if on_stereo is None:
-        def on_stereo(r: StereoResult) -> None:
-            if r.camera_0 is not None or r.camera_1 is not None:
-                print(r)  # noqa: T201
-
-    queue_0: Queue = Queue()  # type: ignore[type-arg]
-    queue_1: Queue = Queue()  # type: ignore[type-arg]
-    stop_event = threading.Event()
-
-    t0 = threading.Thread(target=_camera_worker, args=(source_0, queue_0, stop_event), daemon=True)
-    t1 = threading.Thread(target=_camera_worker, args=(source_1, queue_1, stop_event), daemon=True)
-    t0.start()
-    t1.start()
-
-    try:
-        while True:
-            try:
-                item_0 = queue_0.get(timeout=5.0)
-                item_1 = queue_1.get(timeout=5.0)
-            except Empty:
-                break
-
-            if item_0 is None or item_1 is None:
-                break
-
-            frame_index_0, face_0 = item_0
-            frame_index_1, face_1 = item_1
-
-            on_stereo(StereoResult(
-                frame_index=frame_index_0,
-                camera_0=face_0,
-                camera_1=face_1,
-            ))
-
-            if cv2.waitKey(1) & 0xFF == ord("q"):
-                break
-    finally:
-        stop_event.set()
-        t0.join()
-        t1.join()
-        cv2.destroyAllWindows()
