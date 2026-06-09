@@ -467,9 +467,7 @@ GameObject:
   - component: {fileID: 790702818}
   - component: {fileID: 790702817}
   - component: {fileID: 790702816}
-  - component: {fileID: 790702820}
   - component: {fileID: 790702821}
-  - component: {fileID: 790702822}
   m_Layer: 0
   m_Name: Camera
   m_TagString: Untagged
@@ -589,27 +587,12 @@ Transform:
   m_GameObject: {fileID: 790702815}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: -0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 7.49, y: 2, z: 10.22}
+  m_LocalPosition: {x: 8.664, y: 1.65, z: 9.57415}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -80, z: 0}
---- !u!114 &790702820
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790702815}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 04e1f09a92b6245a29c61042b6f353a8, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::KeyboardCameraController
-  moveSpeed: 2
-  fastMoveSpeed: 15
-  lookSpeed: 2
 --- !u!114 &790702821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -623,26 +606,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HeadTrackedPortalCamera
   portalCamera: {fileID: 790702818}
-  eye: {fileID: 790702819}
+  eye: {fileID: 1205204462}
   screenBottomLeft: {fileID: 450828580}
   screenBottomRight: {fileID: 1724279530}
   screenTopLeft: {fileID: 1031171513}
   nearClip: 0.01
   farClip: 100
---- !u!114 &790702822
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 790702815}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9a1c7aab37804422e9b29db81b3bc96f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraController
-  serverUrl: ws://localhost:8765
-  defaultMoveSpeed: 5
 --- !u!1001 &791088593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -821,6 +790,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1205204462}
+  - component: {fileID: 1205204463}
+  - component: {fileID: 1205204464}
   m_Layer: 0
   m_Name: EyeTestRig
   m_TagString: Untagged
@@ -843,6 +814,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1205204463
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205204461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 04e1f09a92b6245a29c61042b6f353a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KeyboardCameraController
+  moveSpeed: 2
+  fastMoveSpeed: 15
+  lookSpeed: 2
+--- !u!114 &1205204464
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1205204461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a1c7aab37804422e9b29db81b3bc96f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraController
+  serverUrl: ws://localhost:8080
+  defaultMoveSpeed: 5
 --- !u!1 &1372258869
 GameObject:
   m_ObjectHideFlags: 0
