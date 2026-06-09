@@ -1,4 +1,8 @@
-"""Face detection and landmark streaming using YuNet (OpenCV)."""
+"""Face detection and landmark streaming using YuNet (OpenCV).
+
+Use `run_tcp_stereo_stream()` when the laptop is running YuNet and face detection.
+The phone only streams the images.
+"""
 
 from __future__ import annotations
 
