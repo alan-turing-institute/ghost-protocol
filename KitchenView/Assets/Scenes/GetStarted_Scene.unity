@@ -607,7 +607,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 04e1f09a92b6245a29c61042b6f353a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KeyboardCameraController
-  moveSpeed: 5
+  moveSpeed: 2
   fastMoveSpeed: 15
   lookSpeed: 2
 --- !u!114 &790702821

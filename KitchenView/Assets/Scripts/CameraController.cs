@@ -10,8 +10,6 @@ public class CameraCommand
     public float y;
     public float z;
     public float speed;       // units/sec for move
-
-
 }
 
 
