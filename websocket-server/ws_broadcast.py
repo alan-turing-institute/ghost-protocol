@@ -33,7 +33,7 @@ async def handler(websocket):
 async def serve():
     local_ip = get_local_ip()
 
-    port = 8765
+    port = 9000
     print(f"WebSocket broadcast server running")
     print(f"  Local:   ws://localhost:{port}")
     print(f"  Network: ws://{local_ip}:{port}")
