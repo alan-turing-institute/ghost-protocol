@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import socket
+import struct
 import threading
+import time
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -206,6 +209,106 @@ def run_stream(
         if writer is not None:
             writer.release()
         cv2.destroyAllWindows()
+
+
+def _recv_exact(sock: socket.socket, n: int) -> bytes:
+    """Read exactly n bytes from sock, raising EOFError if the connection closes."""
+    buf = bytearray()
+    while len(buf) < n:
+        chunk = sock.recv(n - len(buf))
+        if not chunk:
+            raise EOFError("TCP connection closed")
+        buf.extend(chunk)
+    return bytes(buf)
+
+
+def _tcp_camera_worker(
+    host: str,
+    port: int,
+    result_queue: Queue,  # type: ignore[type-arg]
+    stop_event: threading.Event,
+) -> None:
+    """Connect to a TCP stream, read size-prefixed JPEG frames, run face detection."""
+    try:
+        sock = socket.create_connection((host, port))
+    except OSError:
+        result_queue.put(None)
+        return
+
+    tracker: FaceTracker | None = None
+    frame_index = 0
+    t0 = time.monotonic()
+
+    try:
+        while not stop_event.is_set():
+            size_bytes = _recv_exact(sock, 4)
+            size = struct.unpack(">I", size_bytes)[0]
+            jpeg = _recv_exact(sock, size)
+
+            frame = cv2.imdecode(np.frombuffer(jpeg, dtype=np.uint8), cv2.IMREAD_COLOR)
+            if frame is None:
+                continue
+
+            h, w = frame.shape[:2]
+            if tracker is None:
+                tracker = FaceTracker(w, h)
+
+            timestamp_ms = int((time.monotonic() - t0) * 1000)
+            face = tracker.update(frame, frame_index, timestamp_ms)
+            result_queue.put((frame_index, face))
+            frame_index += 1
+    except EOFError:
+        pass
+    finally:
+        sock.close()
+        result_queue.put(None)
+
+
+def run_tcp_stereo_stream(
+    host_0: str,
+    port_0: int,
+    host_1: str,
+    port_1: int,
+    on_stereo: Callable[[StereoResult], None] | None = None,
+) -> None:
+    """Connect to two TCP JPEG streams and emit paired StereoResults."""
+    if on_stereo is None:
+        def on_stereo(r: StereoResult) -> None:
+            if r.camera_0 is not None or r.camera_1 is not None:
+                print(r)  # noqa: T201
+
+    queue_0: Queue = Queue()  # type: ignore[type-arg]
+    queue_1: Queue = Queue()  # type: ignore[type-arg]
+    stop_event = threading.Event()
+
+    t0 = threading.Thread(target=_tcp_camera_worker, args=(host_0, port_0, queue_0, stop_event), daemon=True)
+    t1 = threading.Thread(target=_tcp_camera_worker, args=(host_1, port_1, queue_1, stop_event), daemon=True)
+    t0.start()
+    t1.start()
+
+    try:
+        while True:
+            try:
+                item_0 = queue_0.get(timeout=5.0)
+                item_1 = queue_1.get(timeout=5.0)
+            except Empty:
+                break
+
+            if item_0 is None or item_1 is None:
+                break
+
+            frame_index_0, face_0 = item_0
+            _, face_1 = item_1
+
+            on_stereo(StereoResult(
+                frame_index=frame_index_0,
+                camera_0=face_0,
+                camera_1=face_1,
+            ))
+    finally:
+        stop_event.set()
+        t0.join()
+        t1.join()
 
 
 def run_stereo_stream(
