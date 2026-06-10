@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=uk.ac.turing.stream
+Exec=/usr/libexec/stream-filter
