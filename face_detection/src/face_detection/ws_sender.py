@@ -58,7 +58,7 @@ class WebSocketClient:
             await ws.wait_closed()
 
     def __call__(self, result: FaceResult | StereoResult) -> None:
-        payload = json.dumps(dataclasses.asdict(result))
+        payload = json.dumps({"faceResult": dataclasses.asdict(result)})
         asyncio.run_coroutine_threadsafe(self._send(payload), self._loop)
 
     async def _send(self, payload: str) -> None:
