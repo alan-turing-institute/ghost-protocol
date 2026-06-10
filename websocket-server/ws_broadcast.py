@@ -43,7 +43,8 @@ async def serve(port):
 
 
 def main():
-    asyncio.run(serve(sys.argv[1]))
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else 9000
+    asyncio.run(serve(port))
 
 
 if __name__ == "__main__":
