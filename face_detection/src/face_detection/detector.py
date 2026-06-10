@@ -21,7 +21,7 @@ import numpy as np
 
 _MODEL_URL = "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
 _IOU_THRESHOLD = 0.3  # minimum overlap to consider a detection the same face
-_DETECT_WIDTH = 320  # downscale to this width before detection for speed
+_STREAM_DONE = object()  # sentinel pushed to queues when a worker exits
 
 
 @dataclass
@@ -33,15 +33,13 @@ class FaceResult:
     bbox: tuple[float, float, float, float]  # (x, y, w, h) pixels
     frame_width: int
     frame_height: int
-    frame_index: int
     timestamp_ms: int
 
 
 @dataclass
 class StereoResult:
-    """Paired face detections from two cameras at the same frame index."""
+    """Paired face detections from two cameras."""
 
-    frame_index: int
     camera_0: FaceResult | None
     camera_1: FaceResult | None
 
@@ -61,9 +59,7 @@ def _iou(box_a: np.ndarray, box_b: np.ndarray) -> float:
     return float(inter / union) if union > 0 else 0.0
 
 
-def _face_result(
-    face: np.ndarray, w: int, h: int, frame_index: int, timestamp_ms: int
-) -> FaceResult:
+def _face_result(face: np.ndarray, w: int, h: int, timestamp_ms: int) -> FaceResult:
     """Convert a YuNet detection row into a FaceResult."""
     # YuNet row: [x, y, w, h, re_x, re_y, le_x, le_y, nose_x, nose_y, rm_x, rm_y, lm_x, lm_y, score]
     return FaceResult(
@@ -72,7 +68,6 @@ def _face_result(
         bbox=(float(face[0]), float(face[1]), float(face[2]), float(face[3])),
         frame_width=w,
         frame_height=h,
-        frame_index=frame_index,
         timestamp_ms=timestamp_ms,
     )
 
@@ -86,7 +81,7 @@ def _annotate(frame: np.ndarray, face: FaceResult) -> np.ndarray:
         cv2.circle(out, (int(point[0]), int(point[1])), 4, (0, 0, 255), -1)
     cv2.putText(
         out,
-        f"f{face.frame_index} t{face.timestamp_ms}ms",
+        f"t{face.timestamp_ms}ms",
         (x, y - 8),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.5,
@@ -111,9 +106,7 @@ class FaceTracker:
         )
         self._tracked_box: np.ndarray | None = None  # [x, y, w, h] of current target
 
-    def update(
-        self, frame: np.ndarray, frame_index: int, timestamp_ms: int
-    ) -> FaceResult | None:
+    def update(self, frame: np.ndarray, timestamp_ms: int) -> FaceResult | None:
         """Detect and track a face in frame, returning None if tracking is lost."""
         h, w = frame.shape[:2]
         self._detector.setInputSize((w, h))
@@ -127,7 +120,7 @@ class FaceTracker:
             # no target yet — pick the largest face
             best = max(faces, key=lambda f: f[2] * f[3])
             self._tracked_box = best[:4].copy()
-            return _face_result(best, w, h, frame_index, timestamp_ms)
+            return _face_result(best, w, h, timestamp_ms)
 
         # find the face with highest IoU against the last known box
         best_face = max(faces, key=lambda f: _iou(f[:4], self._tracked_box))
@@ -138,7 +131,7 @@ class FaceTracker:
             return None
 
         self._tracked_box = best_face[:4].copy()
-        return _face_result(best_face, w, h, frame_index, timestamp_ms)
+        return _face_result(best_face, w, h, timestamp_ms)
 
 
 def _download_model() -> str:
@@ -149,36 +142,6 @@ def _download_model() -> str:
         print(f"Downloading YuNet model to {model_path}...")
         urllib.request.urlretrieve(_MODEL_URL, model_path)
     return str(model_path)
-
-
-def _camera_worker(
-    source: int | str,
-    result_queue: Queue,  # type: ignore[type-arg]
-    stop_event: threading.Event,
-) -> None:
-    """Read frames from a source and push (frame_index, FaceResult | None) to the queue."""
-    cap = cv2.VideoCapture(source)
-    if not cap.isOpened():
-        result_queue.put(None)
-        return
-
-    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-    tracker = FaceTracker(w, h)
-    frame_index = 0
-
-    while not stop_event.is_set():
-        ret, frame = cap.read()
-        if not ret:
-            break
-        timestamp_ms = int(frame_index * 1000 / fps)
-        face = tracker.update(frame, frame_index, timestamp_ms)
-        result_queue.put((frame_index, face))
-        frame_index += 1
-
-    cap.release()
-    result_queue.put(None)
 
 
 def run_stream(
@@ -202,7 +165,7 @@ def run_stream(
     h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
     tracker = FaceTracker(w, h)
-    frame_index = 0
+    frame_count = 0
 
     writer = None
     if output_path is not None:
@@ -214,9 +177,9 @@ def run_stream(
             ret, frame = cap.read()
             if not ret:
                 break
-            timestamp_ms = int(frame_index * 1000 / fps)
-            face = tracker.update(frame, frame_index, timestamp_ms)
-            frame_index += 1
+            timestamp_ms = int(frame_count * 1000 / fps)
+            face = tracker.update(frame, timestamp_ms)
+            frame_count += 1
             if face is not None:
                 on_face(face)
                 if writer is not None:
@@ -253,11 +216,10 @@ def _tcp_camera_worker(
     try:
         sock = socket.create_connection((host, port))
     except OSError:
-        result_queue.put(None)
+        result_queue.put(_STREAM_DONE)
         return
 
     tracker: FaceTracker | None = None
-    frame_index = 0
 
     try:
         while not stop_event.is_set():
@@ -274,16 +236,15 @@ def _tcp_camera_worker(
             if tracker is None:
                 tracker = FaceTracker(w, h)
 
-            timestamp_ms = time.time_ms()
-            face = tracker.update(frame, frame_index, timestamp_ms)
-            result_queue.put((frame_index, face))
-            frame_index += 1
+            timestamp_ms = int(time.time() * 1000)
+            face = tracker.update(frame, timestamp_ms)
+            result_queue.put(face)
             sock.sendall(b"Done!\n")  # ACK — phone may now send next frame
     except EOFError:
         pass
     finally:
         sock.close()
-        result_queue.put(None)
+        result_queue.put(_STREAM_DONE)
 
 
 def run_tcp_stream(
@@ -309,13 +270,12 @@ def run_tcp_stream(
     try:
         while True:
             item = queue.get(timeout=10.0)
-            if item is None:
+            if item is _STREAM_DONE:
                 print("Connection closed.")
                 break
-            _, face = item
             frame_count += 1
-            if face is not None:
-                on_face(face)
+            if item is not None:
+                on_face(item)
     except Empty:
         print("Timed out waiting for frames.")
     finally:
@@ -368,19 +328,13 @@ def run_tcp_stereo_stream(
             except Empty:
                 break
 
-            if item_0 is None or item_1 is None:
+            if item_0 is _STREAM_DONE or item_1 is _STREAM_DONE:
                 break
 
-            frame_index_0, face_0 = item_0
-            _, face_1 = item_1
+            face_0 = item_0
+            face_1 = item_1
 
-            on_stereo(
-                StereoResult(
-                    frame_index=frame_index_0,
-                    camera_0=face_0,
-                    camera_1=face_1,
-                )
-            )
+            on_stereo(StereoResult(camera_0=face_0, camera_1=face_1))
     finally:
         stop_event.set()
         t0.join()
