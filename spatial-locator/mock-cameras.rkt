@@ -26,7 +26,7 @@
 
 (define *amplitude* 2.0)
 (define *period* 10.0) ; in seconds
-(define *nticks* 10) ; number of updates per period
+(define *nticks* 100) ; number of updates per period
 
 
 (define *tick* (/ *period* *nticks*)) ; time for which to sleep between updates
@@ -49,9 +49,10 @@
                 [le-rc (world->camera (list (- x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)]
                 [re-rc (world->camera (list (+ x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)])
             (display ".")
+            ;; (ws-send! the-server
+            ;;           (head-location/json x *eye-y* *eye-z*))
             (ws-send! the-server
-                      (head-location/json x *eye-y* *eye-z*))
-            ;; (faces/json le-lc re-lc le-rc re-rc camera/left camera/right)))
+                      (faces/json le-lc re-lc le-rc re-rc camera/left camera/right))
             (sleep *tick*)
             (loop (modulo (+ tick 1) *nticks*))))))
     (λ () ;; Close the connection cleanly
