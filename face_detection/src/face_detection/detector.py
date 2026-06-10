@@ -64,6 +64,7 @@ def _iou(box_a: np.ndarray, box_b: np.ndarray) -> float:
 def _face_result(
     face: np.ndarray, w: int, h: int, frame_index: int, timestamp_ms: int
 ) -> FaceResult:
+    """Convert a YuNet detection row into a FaceResult."""
     # YuNet row: [x, y, w, h, re_x, re_y, le_x, le_y, nose_x, nose_y, rm_x, rm_y, lm_x, lm_y, score]
     return FaceResult(
         left_eye=(float(face[6]), float(face[7])),
@@ -77,6 +78,7 @@ def _face_result(
 
 
 def _annotate(frame: np.ndarray, face: FaceResult) -> np.ndarray:
+    """Draw bounding box and eye points onto a copy of frame."""
     out = frame.copy()
     x, y, w, h = (int(v) for v in face.bbox)
     cv2.rectangle(out, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -98,6 +100,7 @@ class FaceTracker:
     """Wraps YuNet with IoU-based single-person tracking across frames."""
 
     def __init__(self, width: int, height: int) -> None:
+        """Initialise YuNet for frames of the given dimensions."""
         self._detector = cv2.FaceDetectorYN.create(
             _download_model(),
             "",
@@ -111,6 +114,7 @@ class FaceTracker:
     def update(
         self, frame: np.ndarray, frame_index: int, timestamp_ms: int
     ) -> FaceResult | None:
+        """Detect and track a face in frame, returning None if tracking is lost."""
         h, w = frame.shape[:2]
         self._detector.setInputSize((w, h))
         _, faces = self._detector.detect(frame)
@@ -138,6 +142,7 @@ class FaceTracker:
 
 
 def _download_model() -> str:
+    """Return path to the YuNet ONNX model, downloading it if needed."""
     model_path = Path.home() / ".cache" / "yunet" / "face_detection_yunet_2023mar.onnx"
     if not model_path.exists():
         model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -253,7 +258,6 @@ def _tcp_camera_worker(
 
     tracker: FaceTracker | None = None
     frame_index = 0
-    t0 = time.monotonic()
 
     try:
         while not stop_event.is_set():
@@ -270,7 +274,7 @@ def _tcp_camera_worker(
             if tracker is None:
                 tracker = FaceTracker(w, h)
 
-            timestamp_ms = int((time.monotonic() - t0) * 1000)
+            timestamp_ms = time.time_ms()
             face = tracker.update(frame, frame_index, timestamp_ms)
             result_queue.put((frame_index, face))
             frame_index += 1
