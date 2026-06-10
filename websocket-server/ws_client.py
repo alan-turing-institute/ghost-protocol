@@ -2,7 +2,7 @@ import threading
 import websockets.sync.client
 from pynput import keyboard
 
-SERVER_URL = "ws://10.10.100.255:9000"
+SERVER_URL = "ws://10.10.100.91:9000"
 KEYS = {"w", "a", "s", "d"}
 
 ws = websockets.sync.client.connect(SERVER_URL)
