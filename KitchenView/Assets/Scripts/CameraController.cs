@@ -4,21 +4,41 @@ using NativeWebSocket;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class CameraCommand
+public class HeadLocationMessage
 {
-    public float x;
-    public float y;
-    public float z;
-    public float speed;       // units/sec for move
+    public HeadLocation headLocation;
 }
 
+[System.Serializable]
+public class HeadLocation
+{
+    public float[] location;
+    public long timestamp;
+}
 
 public class CameraController : MonoBehaviour
 {
     public string serverUrl = "ws://localhost:8080";
     public float defaultMoveSpeed = 5f;
     private WebSocket _ws;
-    private readonly Queue<CameraCommand> _commandQueue = new();
+    private readonly Queue<HeadLocationMessage> _commandQueue = new();
+
+    [Header("Translation offset (Unity units)")]
+    public Vector3 positionOffset = Vector3.zero;
+ 
+    [Header("Scale applied to incoming world position")]
+    public Vector3 positionScale = Vector3.one;
+ 
+    [Header("Rotation offset (Euler degrees)")]
+    public Vector3 rotationOffset = Vector3.zero;
+ 
+    // The raw head position in world space, set externally
+    // (e.g. by your WebSocket/UDP receiver script)
+    [HideInInspector]
+    public Vector3 rawHeadPosition = Vector3.zero;
+ 
+    // Read-only: the final computed camera position after transform
+    public Vector3 ComputedPosition { get; private set; }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     async void Start()
@@ -35,16 +55,17 @@ public class CameraController : MonoBehaviour
 
 void OnMessage(byte[] data)
     {
-        var json = System.Text.Encoding.UTF8.GetString(data);
+        var jsonString = System.Text.Encoding.UTF8.GetString(data);
         try
         {
-            var cmd = JsonUtility.FromJson<CameraCommand>(json);
-            Debug.Log($"Received command {cmd}");
-            lock (_commandQueue) _commandQueue.Enqueue(cmd);
+            var msg = JsonUtility.FromJson<HeadLocationMessage>(jsonString);
+
+            Debug.Log($"Received position {msg}");
+            lock (_commandQueue) _commandQueue.Enqueue(msg);
         }
         catch (Exception e)
         {
-            Debug.LogWarning($"Bad message: {json}\n{e.Message}");
+            Debug.LogWarning($"Bad message: {jsonString}\n{e.Message}");
         }
     }
 
@@ -56,16 +77,33 @@ void OnMessage(byte[] data)
         {
             while (_commandQueue.Count > 0)
                 ProcessCommand(_commandQueue.Dequeue());
-        }        
+        }
+
+        // Apply scale then offset to the incoming head position
+        Vector3 scaled = Vector3.Scale(rawHeadPosition, positionScale);
+        Vector3 translated = scaled + positionOffset;
+ 
+        ComputedPosition = translated;
+        //transform.position = translated;
+ 
+        // Apply rotation offset on top of any base rotation
+       // transform.rotation = Quaternion.Euler(rotationOffset);
     }
 
-    void ProcessCommand(CameraCommand cmd)
+    void ProcessCommand(HeadLocationMessage msg)
     {
-        float moveSpeed   = cmd.speed > 0 ? cmd.speed : defaultMoveSpeed;
-        var   delta       = new Vector3(cmd.x, cmd.y, cmd.z);
-        
-        // Moves relative to camera's current orientation
-        transform.Translate(delta * moveSpeed * Time.deltaTime, Space.Self);
+        Vector3 rawHeadPosition = new Vector3(msg.headLocation.location[0],
+                                  msg.headLocation.location[1],
+                                  msg.headLocation.location[2]);
+        // Apply scale then offset to the incoming head position
+        Vector3 scaled = Vector3.Scale(rawHeadPosition, positionScale);
+        Vector3 translated = scaled + positionOffset;
+ 
+        ComputedPosition = translated;
+        transform.position = translated;
+ 
+        // Apply rotation offset on top of any base rotation
+        transform.rotation = Quaternion.Euler(rotationOffset);
                 
     }
 
