@@ -23,6 +23,7 @@
 \begin{document}%\maketitle
 \maketitle
 
+\section*{Conversion between camera and world frames}
 \begin{marginfigure}
 \includegraphics[width=\marginparwidth]{fig1.pdf}
 \end{marginfigure}
@@ -30,40 +31,58 @@
 A camera is defined by: its location, $\vec{c}$; a unit vector,
 $\hat{\vec{n}}$, pointing in the direction of view; a unit vector,
 $\hat{\vec{u}}$, orthogonal to $\hat{\vec{n}}$ and defining the ``horizontal'' of
-the image plane; and a ``focal length,'' $f$.  
+the image plane; and a ``focal length,'' $f$. The focal length has
+units of ``pixels per metre'' and is the size, in the camera frame, of
+an object of size \qty{1}{\metre} at a distance of~\qty{1}{\metre} in
+the world frame.
 
 The image of a point $\vec{p}$ (in the real world) is a pair, $(u,v)$ (on
 the image taken by the camera) determined as follows.
 \begin{enumerate}
-\item Compute $d = (\vec{p}-\vec{c})\cdot\hat{\vec{n}}$, the distance from the
+\item Compute $\vec{x} = \vec{p}-\vec{c}$, the vector from the camera
+  to the point;
+\item Compute $d = \vec{x}\cdot\hat{\vec{n}}$, the distance from the
   camera to a plane orthogonal to $\hat{\vec{n}}$ containing~$\vec{p}$;
-\item Compute $\vec{p}/d - \hat{\vec{n}}$, a vector lying in the above
+\item Compute $\vec{x}/d - \hat{\vec{n}}$, a vector lying in the above
   plane scaled by the distance to the camera;
 \item Project onto the ``image axes,'' and scale to obtain
 \begin{equation*}
   \begin{split}
-    u &= f \bigl( \vec{p}/d - \hat{\vec{n}} \bigr) \cdot\hat{\vec{u}} \\
-      &= (\vec{p}\cdot\hat{\vec{u}})f/d,
+    u &= f \bigl( \vec{x}/d - \hat{\vec{n}} \bigr) \cdot\hat{\vec{u}} \\
+      &= (\vec{x}\cdot\hat{\vec{u}})f/d,
   \end{split}
 \end{equation*}
   and
 \begin{equation*}
   \begin{split}
-    y &= \vec{p}\cdot(\hat{\vec{u}}\times\hat{\vec{n}})f/d. \\
+    y &= \vec{x}\cdot(\hat{\vec{u}}\times\hat{\vec{n}})f/d. \\
   \end{split}
 \end{equation*}
 \end{enumerate}
 
-Typically, the camera's orientation is expressed as a rotation matrix,
+Conversely, if one starts with a position, $(u, v)$, in the camera's
+frame, one obtains a ray in the real world. A ray is a set of points,
+$\vec{c}+\lambda \hat{\vec{r}}$, where $\vec{c}$ is a point on the ray
+(at the camera's location), and $\lambda\geq 0$ a number. To compute
+$\hat{\vec{r}}$: 
+\begin{enumerate}
+\item An unnormalised ray direction is
+  $\vec{r} = \hat{\vec{n}} + (u\vec{u}+v\vec{v})/f$.
+\item A normalised ray direction is $\hat{\vec{r}} = \vec{r}/\left|\vec{r}\right|$.
+\end{enumerate}
+
+
+
+\section*{Euler angles}
+Often the camera's orientation is expressed as a rotation matrix,
 $\vec{R}$, so that $\hat{\vec{n}} = \vec{R}\hat{\vec{y}}$ (where
 $\hat{\vec{y}}$ is the unit vector in the $y$-direction) and
-$\hat{\vec{u}}=\vec{R}\hat{\vec{x}}$ (likewise).
-
-Both the unit vectors and the rotation matrix are easy to write down
-but involve a constraint. Thus, they are not convenient
-parametrisations of the aspect of the camera. The usual alternative is
-the Euler angles. We use the following convention, based on the way
-one imagines that the camera is physically oriented:
+$\hat{\vec{u}}=\vec{R}\hat{\vec{x}}$ (likewise). Both the unit vectors
+and the rotation matrix are easy to write down but involve a
+constraint. Thus, they are not convenient parametrisations of the
+aspect of the camera. The usual alternative is the Euler angles. We
+use the following convention, based on the way one imagines that the
+camera is physically oriented:
 \begin{enumerate}
 \item $\alpha$ is the rotation around the $z$-axis (this being the
   principal axis of the tripod). Convention is right-handed, so ``from

@@ -9,3 +9,16 @@ Return:
 
 An x, y, z position, in metres, from an origin fixed relative to the
 screen.
+
+
+# Racket
+
+Install Racket
+```
+brew install racket
+```
+
+I forget which libraries are needed. But at least websockets:
+```
+raco pkg install rfc6455
+``
