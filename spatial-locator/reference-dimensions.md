@@ -60,3 +60,24 @@ Reference point is (roughly!) the centre of the bulbous glass bit.
 
 (1.77, 2.22, 9.4)
 
+# Cameras
+
+A single one of the nine displays is 1.215m x 0.68m
+
+The camera is 4000 x 3000 pixels
+
+At the floor marker (3.71m away) the central display is 1082 x 613
+pixels.
+
+The focal length is the size, in pixels, of an object of size 1m at a
+distance of 1m. l is size on screen, L is size in reality, d is
+distance. Then:
+
+  l = f L/d,
+
+or f =ld/L. Hence f = 3,307 (horizontal) and 3,344 (vertical). Let's
+average to 3,326.
+
+The image metadata says: focal length: 4.05, aperture 1.696,
+resolution 72 (dpi?).
+
