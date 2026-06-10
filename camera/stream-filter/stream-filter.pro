@@ -13,13 +13,26 @@
 TARGET = stream-filter
 
 QT = core dbus multimedia
-CONFIG += link_pkgconfig
+CONFIG += link_pkgconfig opencv4
+
+PKGCONFIG += opencv4
 
 HEADERS += src/service.h \
+    src/facetracker.h \
     src/server.h
 
 SOURCES += src/stream-filter.cpp src/service.cpp \
+    src/facetracker.cpp \
     src/server.cpp
+
+DISTFILES += models/face_detection_yunet_2023mar.onnx
+
+models.path = /usr/share/$${TARGET}/models
+models.files = models/*
+
+INSTALLS += models
+
+INCLUDEPATH += /usr/include/opencv4
 
 OTHER_FILES = rpm/stream-filter.spec
 
