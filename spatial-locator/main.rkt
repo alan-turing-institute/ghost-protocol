@@ -36,7 +36,7 @@
   (displayln "connected.\n")
 
   ;; For testing: Send a single position message
-  (broadcast-position! '(2.0 5.0 1.65) (current-milliseconds) the-server)
+ ;  (broadcast-position! '(2.0 5.0 1.65) (current-milliseconds) the-server)
   
   ;; The main loop
   ;; Repeatedly:

@@ -33,8 +33,8 @@
 
 (module+ main
 
-  ;; (display (format "Connecting to websocket-server on ~a ... " ws-server-url))
-  ;; (define the-server (ws-connect (string->url ws-server-url)))
+  (display (format "Connecting to websocket-server on ~a ... " ws-server-url))
+  (define the-server (ws-connect (string->url ws-server-url)))
 
   (displayln "connected.\n")
 
@@ -48,17 +48,17 @@
                 [re-lc (world->camera (list (+ x (/ *pd* 2)) *eye-y* *eye-z*) camera/left)]
                 [le-rc (world->camera (list (- x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)]
                 [re-rc (world->camera (list (+ x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)])
-            (displayln
-             (faces/json le-lc re-lc le-rc re-rc camera/left camera/right))))
-        (sleep *tick*)
-        (loop (modulo (+ tick 1) *nticks*)) )
-      )
+            (display ".")
+            (ws-send! the-server
+                      (head-location/json x *eye-y* *eye-z*))
+            ;; (faces/json le-lc re-lc le-rc re-rc camera/left camera/right)))
+            (sleep *tick*)
+            (loop (modulo (+ tick 1) *nticks*))))))
     (λ () ;; Close the connection cleanly
       (displayln "Closing down...")
-      ;; (ws-close! the-server #:status 1001 #:reason "Client shutting down.")
+      (ws-close! the-server #:status 1001 #:reason "Client shutting down.")))
       )
-    )
-  )
+        
 
 (define (faces/json le-lc re-lc le-rc re-rc caml camr)
   (jsexpr->string
@@ -88,3 +88,9 @@
             (- yy dx)
             (* 2.0 dx)
             (* 3.0 dx)))))
+
+(define (head-location/json x y z)
+  (jsexpr->string
+   (hash 'headLocation
+         (hash 'location (list x y z)
+               'timestamp (current-milliseconds)))))
