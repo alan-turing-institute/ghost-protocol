@@ -1,11 +1,32 @@
 #lang racket/base
 
+(require racket/gui/base
+         racket/class)
+
 (require net/rfc6455
          net/url
          json)
 
-(require (only-in "config.rkt"
-                  ws-server-url))
+(require
+ "spatial.rkt"
+ "camera-config.rkt" ; for camera/left and camera/right
+ "config.rkt"        ; for ws-server-url
+ )
+
+
+;; -------------------------------------------------------------------------------
+;; Representation of a head location, as returned from the socket server
+
+;; left-eye, right-eye: (x y) locations in image-coordinates (origin is top-left)
+;; bbox   : (x1 y1 x2 y2)
+;; wd, ht : width and height of the image
+;; t      : a timestamp
+(struct head (left-eye right-eye bbox wd ht t) #:transparent)
+
+;; A global, mutable variable with the current head locations
+(define *the-left-head*  (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0))
+(define *the-right-head* (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0))
+
 
 (module+ main
 
@@ -15,7 +36,7 @@
   (displayln "connected.\n")
 
   ;; For testing: Send a single position message
-  (broadcast-position '(2.0 5.0 1.65) (current-milliseconds) the-server)
+  (broadcast-position! '(2.0 5.0 1.65) (current-milliseconds) the-server)
   
   ;; The main loop
   ;; Repeatedly:
@@ -29,40 +50,62 @@
     (λ ()
       (let loop ()
         (unless (ws-conn-closed? the-server)
-          (let ([msg (sync (ws-recv-evt the-server))])
-            (displayln msg)
+          (let* ([msg      (sync (ws-recv-evt the-server))]
+                 [msg/js   (and msg (parse-message msg 'faceResult))]
+                 [left/js  (and msg/js (hash-ref msg/js 'camera_0 #f))]
+                 [right/js (and msg/js (hash-ref msg/js 'camera_1 #f))]
+                 [head/lft (and left/js
+                                (not (eq? left/js 'null))
+                                (get-head-location left/js))]
+                 [head/rgt (and right/js
+                                (not (eq? right/js 'null))
+                                (get-head-location right/js))])
+            ;; (displayln (format "msg: ~a" msg))
+            ;; (displayln (format  "msg/js: ~a" msg/js))
+            ;; (displayln (format "left/js: ~a" left/js))
+            (displayln (format "left : ~a\nright: ~a\n" head/lft head/rgt))
             (loop)))))
     (λ () ;; Close the connection cleanly
       (displayln "Closing down...")
       (ws-close! the-server #:status 1001 #:reason "Client shutting down.")
-      (exit))
+      ; (exit)
+      )
     )
 
   (unless (ws-conn-closed? the-server) (ws-close! the-server))
   
   )
-  
-;; (unless (ws-conn-closed? the-server)
-;;   (ws-close! the-server)))
 
-(define (read-any-message msg)
-  (let ([js (with-handlers ([exn:fail:read (λ (_) #f)])
-              (string->jsexpr msg))])
-    msg))
 
-;; Returns either
-;; #f if this message isn't for us or isn't readable; or
-;; jsexpr?
-;;
-;; msg should be jsexpr? of the following format:
+;; ----------------------------------------------------------------------
+;; Socket server reading and writing utilities
+
+;; jsexpr? -> head?
+;; JSON should be of the form:
 ;; 
-(define (read-message msg)
+(define (get-head-location js)
+  (head (hash-ref js 'left_eye)
+        (hash-ref js 'right_eye)
+        (hash-ref js 'bbox)
+        (hash-ref js 'frame_width)
+        (hash-ref js 'frame_height)
+        (hash-ref js 'timestamp_ms)))
+
+
+;; Convert a string to jsexpr? or return #f
+(define (parse-any-message msg)
   (let ([js (with-handlers ([exn:fail:read (λ (_) #f)])
               (string->jsexpr msg))])
-    (and msg
-         (hash? msg)
-         (hash-has-key? 'faceResult)
-         (hash-ref msg 'faceResult))))
+    js))
+
+;; Convert a string to jsexpr?, assume it is a hash, and extract the
+;; value corresponding to the key required-message-type. Return #f if
+;; any of these steps fail.
+(define (parse-message msg required-message-type)
+  (let ([msg/json (parse-any-message msg)])
+    (and msg/json
+         (hash? msg/json)
+         (hash-ref msg/json required-message-type #f))))
 
 ;; Standard message format:
 ;; 
@@ -74,7 +117,7 @@
                'timestamp
                t))))
 
-(define (broadcast-position pos t server)
+(define (broadcast-position! pos t server)
   (ws-send! server
             (make-json-payload pos t))
   

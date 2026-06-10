@@ -84,7 +84,7 @@
   (list (- (car xy) (/ (camera-wd cam) 2.0))
         (- (/ (camera-ht cam) 2.0) (cadr xy))))
 
-;; For a given location in space (x, y, z) produce a pair (u v) of the images location on the camera
+;; For a given location in space (x, y, z) produce a pair (x y) of the images location on the camera
 (define (world->camera p cam)
   (let* ([xvec (vec- p (camera-pos cam))]
          [scale (/ (camera-f cam)
