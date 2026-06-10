@@ -620,17 +620,15 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 790702815}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9a1c7aab37804422e9b29db81b3bc96f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   serverUrl: ws://10.10.100.91:9000
-  defaultMoveSpeed: 5
   positionOffset: {x: 0, y: 0, z: 0}
   positionScale: {x: 1, y: 1, z: 1}
   rotationOffset: {x: 0, y: 0, z: 0}
-  rawHeadPosition: {x: 0, y: 0, z: 0}
 --- !u!1001 &791088593
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -840,7 +838,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1205204461}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 04e1f09a92b6245a29c61042b6f353a8, type: 3}
   m_Name: 
@@ -860,12 +858,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a1c7aab37804422e9b29db81b3bc96f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
-  serverUrl: ws://localhost:8080
-  defaultMoveSpeed: 5
+  serverUrl: ws://10.10.100.91:9000
   positionOffset: {x: 0, y: 0, z: 0}
   positionScale: {x: 1, y: 1, z: 1}
   rotationOffset: {x: 0, y: 0, z: 0}
-  rawHeadPosition: {x: 0, y: 0, z: 0}
 --- !u!1 &1372258869
 GameObject:
   m_ObjectHideFlags: 0

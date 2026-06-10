@@ -56,7 +56,7 @@ public class CameraTransformUI : MonoBehaviour
        if (_positionReadout != null && 
            _positionReadout.panel != null)
        {
-           Vector3 p = controller.ComputedPosition;
+           Vector3 p = controller.TranslatedPosition;
            _positionReadout.text = $"x: {p.x:F3}   y: {p.y:F3}   z: {p.z:F3}";
        }
     }
