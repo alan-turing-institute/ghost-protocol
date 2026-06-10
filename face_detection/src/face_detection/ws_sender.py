@@ -58,6 +58,10 @@ class WebSocketClient:
             await ws.wait_closed()
 
     def __call__(self, result: FaceResult | StereoResult) -> None:
+        if isinstance(result, StereoResult) and (
+            result.camera_0 is None or result.camera_1 is None
+        ):
+            return
         payload = json.dumps({"faceResult": dataclasses.asdict(result)})
         asyncio.run_coroutine_threadsafe(self._send(payload), self._loop)
 
