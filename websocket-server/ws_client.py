@@ -2,7 +2,6 @@ import time
 import json
 import threading
 import websockets.sync.client
-from pynput import keyboard
 
 SERVER_URL = "ws://10.10.100.91:9000"
 KEYS = {"w", "a", "s", "d"}
@@ -16,6 +15,7 @@ y = 5.0
 z = 1.7
 
 def move(direction="w"):
+    global x, y, z
 
     for _ in range(10):
         if direction == "w":
