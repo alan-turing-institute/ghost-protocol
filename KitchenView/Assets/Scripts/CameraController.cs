@@ -36,8 +36,8 @@ public class CameraController : MonoBehaviour
     [Header("Whether to smooth position")] 
     public bool doSmoothing = true;
 
-    [Header("Whether to extrapolate position")]
-    public bool doExtrapolation = true;
+    // [Header("Whether to extrapolate position")]
+    // public bool doExtrapolation = true;
 
     // ── WebSocket ────────────────────────────────────────────────────────────
     private WebSocket _ws;
@@ -149,7 +149,7 @@ public class CameraController : MonoBehaviour
         _measuredInterval    = Mathf.Clamp(now - _lastUpdateTime, 0.016f, 0.5f);
         _lastUpdateTime      = now;
         _velocity            = (translated - _targetPosition) / _measuredInterval;
-        _previousPosition    = _targetPosition;
+        _previousPosition    = transform.position;
         _targetPosition      = translated;
         _elapsedSinceUpdate  = 0f;
         _hasTarget           = true;
