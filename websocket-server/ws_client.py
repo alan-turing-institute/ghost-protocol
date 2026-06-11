@@ -5,26 +5,27 @@ import websockets.sync.client
 from pynput import keyboard
 
 SERVER_URL = "ws://10.10.100.91:9000"
-KEYS = {"w", "a", "s", "d", "m"}
+KEYS = {"w", "a", "s", "d"}
 
 ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
 print("Use W/A/S/D to send messages. Ctrl+C to quit.")
 
+# starting position
 x = 1.75
 y = 5.0
 z = 1.7
 
-def move(direction="forward"):
+def move(direction="w"):
 
     for _ in range(10):
-        if direction == "forward":
+        if direction == "w":
             y -= 0.3
-        elif direction == "backward":
+        elif direction == "s":
             y += 0.3
-        elif direction == "left":
+        elif direction == "a":
             x += 0.3
-        elif direction == "right":
+        elif direction == "d":
             x -= 0.3
         msg = {
                 "headLocation": {
@@ -33,9 +34,4 @@ def move(direction="forward"):
                 }
             }
         ws.send(json.dumps(msg))
-
-
-
-listener = keyboard.Listener(on_press=on_press)
-listener.start()
-listener.join()
+        time.sleep(0.1)
