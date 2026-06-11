@@ -10,9 +10,9 @@ ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
 
 # starting position
-x = 1.75
-y = 5.0
-z = 1.7
+x = 0
+y = 0
+z = 0
 
 def move(direction="w"):
     global x, y, z

@@ -52,7 +52,9 @@ public class CameraController : MonoBehaviour
     {
         _previousPosition = transform.position;
         _targetPosition   = transform.position;
- 
+
+        Debug.Log($"EyeTestRig start position: {transform.position}");
+
         _ws = new WebSocket(serverUrl);
         _ws.OnOpen    += () => Debug.Log("WS connected");
         _ws.OnError   += e  => Debug.LogError($"WS error: {e}");
