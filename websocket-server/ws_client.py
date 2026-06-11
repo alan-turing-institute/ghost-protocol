@@ -19,13 +19,17 @@ def move(direction="w"):
 
     for _ in range(10):
         if direction == "w":
-            y -= 0.3
+            z -= 0.3
         elif direction == "s":
-            y += 0.3
+            z += 0.3
         elif direction == "a":
             x += 0.3
         elif direction == "d":
             x -= 0.3
+        elif direction == "q":
+            y -= 0.3            
+        elif direction == "e":
+            y += 0.3                        
         msg = {
                 "headLocation": {
                     "location": [x, y, z],
