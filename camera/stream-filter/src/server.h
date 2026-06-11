@@ -7,6 +7,11 @@
 #include <QImage>
 #include <QMutex>
 
+enum Message {
+  Message_Image = 0,
+  Message_Face = 1
+};
+
 class Server : public QObject
 {
   Q_OBJECT

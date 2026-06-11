@@ -15,7 +15,7 @@ CXX           = g++
 DEFINES       = -DQT_NO_DEBUG -DQT_DBUS_LIB -DQT_MULTIMEDIA_LIB -DQT_NETWORK_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=4 -Wformat -Wformat-security -march=armv8-a -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -isystem /usr/include/qt5 -isystem /usr/include/qt5/QtDBus -isystem /usr/include/qt5/QtMultimedia -isystem /usr/include/qt5/QtNetwork -isystem /usr/include/qt5/QtGui -isystem /usr/include/qt5/QtCore -I. -I/usr/share/qt5/mkspecs/linux-g++
+INCPATH       = -I. -isystem /usr/include/opencv4 -isystem /usr/include/qt5 -isystem /usr/include/qt5/QtDBus -isystem /usr/include/qt5/QtMultimedia -isystem /usr/include/qt5/QtNetwork -isystem /usr/include/qt5/QtGui -isystem /usr/include/qt5/QtCore -I. -I/usr/share/qt5/mkspecs/linux-g++
 QMAKE         = /usr/lib64/qt5/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -33,10 +33,10 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = stream-filter1.0.0
-DISTDIR = /home/flypig/Documents/Development/turing/hackweek26/stream-filter/.tmp/stream-filter1.0.0
+DISTDIR = /home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter/.tmp/stream-filter1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1
-LIBS          = $(SUBLIBS) -lQt5DBus -lQt5Multimedia -lQt5Network -lQt5Gui -lQt5Core -lGLESv2 -lpthread 
+LIBS          = $(SUBLIBS) -lopencv_highgui -lopencv_ml -lopencv_objdetect -lopencv_photo -lopencv_stitching -lopencv_video -lopencv_calib3d -lopencv_features2d -lopencv_dnn -lopencv_flann -lopencv_videoio -lopencv_imgcodecs -lopencv_imgproc -lopencv_core -lQt5DBus -lQt5Multimedia -lQt5Network -lQt5Gui -lQt5Core -lGLESv2 -lpthread 
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -50,18 +50,23 @@ OBJECTS_DIR   = ./
 
 SOURCES       = src/stream-filter.cpp \
 		src/service.cpp \
+		src/facetracker.cpp \
 		src/server.cpp moc_service.cpp \
+		moc_facetracker.cpp \
 		moc_server.cpp \
 		stream_adaptor.cpp \
 		moc_stream_adaptor.cpp
 OBJECTS       = stream-filter.o \
 		service.o \
+		facetracker.o \
 		server.o \
 		moc_service.o \
+		moc_facetracker.o \
 		moc_server.o \
 		stream_adaptor.o \
 		moc_stream_adaptor.o
-DIST          = /usr/share/qt5/mkspecs/features/spec_pre.prf \
+DIST          = models/face_detection_yunet_2023mar.onnx \
+		/usr/share/qt5/mkspecs/features/spec_pre.prf \
 		/usr/share/qt5/mkspecs/common/unix.conf \
 		/usr/share/qt5/mkspecs/common/linux.conf \
 		/usr/share/qt5/mkspecs/common/sanitize.conf \
@@ -153,8 +158,10 @@ DIST          = /usr/share/qt5/mkspecs/features/spec_pre.prf \
 		/usr/share/qt5/mkspecs/features/yacc.prf \
 		/usr/share/qt5/mkspecs/features/lex.prf \
 		stream-filter.pro src/service.h \
+		src/facetracker.h \
 		src/server.h src/stream-filter.cpp \
 		src/service.cpp \
+		src/facetracker.cpp \
 		src/server.cpp
 QMAKE_TARGET  = stream-filter
 DESTDIR       = 
@@ -376,9 +383,9 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents src/service.h src/server.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/service.h src/facetracker.h src/server.h $(DISTDIR)/
 	$(COPY_FILE) --parents dbus/uk.ac.turing.stream.xml $(DISTDIR)/
-	$(COPY_FILE) --parents src/stream-filter.cpp src/service.cpp src/server.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents src/stream-filter.cpp src/service.cpp src/facetracker.cpp src/server.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents dbus/uk.ac.turing.stream.xml $(DISTDIR)/
 	$(COPY_FILE) --parents stream_adaptor.h $(DISTDIR)/
 
@@ -405,15 +412,19 @@ benchmark: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_service.cpp moc_server.cpp
+compiler_moc_header_make_all: moc_service.cpp moc_facetracker.cpp moc_server.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_service.cpp moc_server.cpp
+	-$(DEL_FILE) moc_service.cpp moc_facetracker.cpp moc_server.cpp
 moc_service.cpp: src/server.h \
+		src/facetracker.h \
 		src/service.h
-	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/stream-filter -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include src/service.h -o moc_service.cpp
+	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter -I/usr/include/opencv4 -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include src/service.h -o moc_service.cpp
+
+moc_facetracker.cpp: src/facetracker.h
+	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter -I/usr/include/opencv4 -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include src/facetracker.h -o moc_facetracker.cpp
 
 moc_server.cpp: src/server.h
-	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/stream-filter -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include src/server.h -o moc_server.cpp
+	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter -I/usr/include/opencv4 -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include src/server.h -o moc_server.cpp
 
 compiler_stream_dbus_adaptor_dbus_adaptor_source_make_all: stream_adaptor.cpp
 compiler_stream_dbus_adaptor_dbus_adaptor_source_clean:
@@ -434,7 +445,7 @@ compiler_stream_dbus_adaptor_dbus_adaptor_moc_make_all: moc_stream_adaptor.cpp
 compiler_stream_dbus_adaptor_dbus_adaptor_moc_clean:
 	-$(DEL_FILE) moc_stream_adaptor.cpp
 moc_stream_adaptor.cpp: stream_adaptor.h
-	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/stream-filter -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include stream_adaptor.h -o moc_stream_adaptor.cpp
+	/usr/lib64/qt5/bin/moc $(DEFINES) -I/usr/share/qt5/mkspecs/linux-g++ -I/home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter -I/usr/include/opencv4 -I/usr/include/qt5 -I/usr/include/qt5/QtDBus -I/usr/include/qt5/QtMultimedia -I/usr/include/qt5/QtNetwork -I/usr/include/qt5/QtGui -I/usr/include/qt5/QtCore -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1 -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/aarch64-meego-linux-gnu -I/opt/cross/aarch64-meego-linux-gnu/include/c++/10.3.1/backward -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include -I/usr/local/include -I/opt/cross/lib/gcc/aarch64-meego-linux-gnu/10.3.1/include-fixed -I/opt/cross/aarch64-meego-linux-gnu/include -I/usr/include stream_adaptor.h -o moc_stream_adaptor.cpp
 
 compiler_yacc_decl_make_all:
 compiler_yacc_decl_clean:
@@ -447,18 +458,26 @@ compiler_clean: compiler_moc_header_clean compiler_stream_dbus_adaptor_dbus_adap
 ####### Compile
 
 stream-filter.o: src/stream-filter.cpp src/service.h \
-		src/server.h
+		src/server.h \
+		src/facetracker.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o stream-filter.o src/stream-filter.cpp
 
 service.o: src/service.cpp src/service.h \
-		src/server.h
+		src/server.h \
+		src/facetracker.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o service.o src/service.cpp
+
+facetracker.o: src/facetracker.cpp src/facetracker.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o facetracker.o src/facetracker.cpp
 
 server.o: src/server.cpp src/server.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o server.o src/server.cpp
 
 moc_service.o: moc_service.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_service.o moc_service.cpp
+
+moc_facetracker.o: moc_facetracker.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_facetracker.o moc_facetracker.cpp
 
 moc_server.o: moc_server.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_server.o moc_server.cpp
@@ -471,9 +490,18 @@ moc_stream_adaptor.o: moc_stream_adaptor.cpp
 
 ####### Install
 
+install_models: first FORCE
+	@test -d $(INSTALL_ROOT)/usr/share/stream-filter/models || mkdir -p $(INSTALL_ROOT)/usr/share/stream-filter/models
+	-$(INSTALL_FILE) /home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter/models/face_detection_yunet_2023mar.onnx $(INSTALL_ROOT)/usr/share/stream-filter/models/
+
+uninstall_models: FORCE
+	-$(DEL_FILE) -r $(INSTALL_ROOT)/usr/share/stream-filter/models/face_detection_yunet_2023mar.onnx
+	-$(DEL_DIR) $(INSTALL_ROOT)/usr/share/stream-filter/models/ 
+
+
 install_service: first FORCE
 	@test -d $(INSTALL_ROOT)/usr/share/dbus-1/services/ || mkdir -p $(INSTALL_ROOT)/usr/share/dbus-1/services/
-	-$(INSTALL_FILE) /home/flypig/Documents/Development/turing/hackweek26/stream-filter/dbus/uk.ac.turing.stream.service $(INSTALL_ROOT)/usr/share/dbus-1/services/
+	-$(INSTALL_FILE) /home/flypig/Documents/Development/turing/hackweek26/ghost-protocol/camera/stream-filter/dbus/uk.ac.turing.stream.service $(INSTALL_ROOT)/usr/share/dbus-1/services/
 
 uninstall_service: FORCE
 	-$(DEL_FILE) -r $(INSTALL_ROOT)/usr/share/dbus-1/services/uk.ac.turing.stream.service
@@ -490,9 +518,9 @@ uninstall_target: FORCE
 	-$(DEL_DIR) $(INSTALL_ROOT)/usr/libexec/ 
 
 
-install: install_service install_target  FORCE
+install: install_models install_service install_target  FORCE
 
-uninstall: uninstall_service uninstall_target  FORCE
+uninstall: uninstall_models uninstall_service uninstall_target  FORCE
 
 FORCE:
 

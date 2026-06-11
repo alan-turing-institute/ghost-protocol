@@ -53,7 +53,7 @@ QVideoFrame VideoFilterRunnable::run(QVideoFrame *input, const QVideoSurfaceForm
         return in;
     }
 
-    if (!m_timer.hasExpired(500)) {
+    if (!m_timer.hasExpired(4)) {
         return in;
     }
     m_timer.restart();

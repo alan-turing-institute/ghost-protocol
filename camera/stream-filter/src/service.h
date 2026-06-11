@@ -3,16 +3,16 @@
 
 #include <QDBusContext>
 #include <QDBusUnixFileDescriptor>
-#include <QTimer>
 
 #include "server.h"
+#include "facetracker.h"
 
 class Service: public QObject, public QDBusContext
 {
     Q_OBJECT
 
 public:
-    explicit Service(Server* server, QObject *parent = nullptr);
+    explicit Service(Server* server, FaceTracker* facetrackers, QObject *parent = nullptr);
     virtual ~Service();
 
 public slots:
@@ -24,6 +24,7 @@ private:
 
 private:
     Server* m_server;
+    FaceTracker* m_facetracker;
 };
 
 #endif // SERVICE_H

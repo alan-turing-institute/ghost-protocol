@@ -7,7 +7,6 @@
 Server::Server(QObject *parent) : QObject(parent)
 {
   qint32 pos;
-
   m_server = new QTcpServer(this);
 
   connect(m_server, &QTcpServer::newConnection, this, &Server::newConnection);
@@ -70,7 +69,7 @@ void Server::sendNextImage(QTcpSocket* socket)
   m_setNextImage.lock();
   m_imageBuffer[0]->save(&buffer, "JPG");
   // Save a copy of the image for debugging purposes
-  m_imageBuffer[0]->save("/home/defaultuser/image.jpg", 0);
+  //m_imageBuffer[0]->save("/home/defaultuser/image.jpg", 0);
   m_setNextImage.unlock();
 
   uValue = data.size();

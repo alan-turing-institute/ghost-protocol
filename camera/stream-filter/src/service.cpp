@@ -9,6 +9,7 @@
 #include <QVideoSurfaceFormat>
 #include <QImage>
 #include <QCoreApplication>
+#include <QPainter>
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -18,11 +19,12 @@ const char *OBJECT_PATH = "/uk/ac/turing/stream";
 const char *INTERFACE = "uk.ac.turing.stream";
 const QDBusConnection::RegisterOption flags = QDBusConnection::ExportAllSlots;
 
-Service::Service(Server* server, QObject *parent)
+Service::Service(Server* server, FaceTracker* facetracker, QObject *parent)
     : QObject(parent),
       QDBusContext()
 {
   m_server = server;
+  m_facetracker = facetracker;
   qDebug() << "Creating connection";
   QDBusConnection connection = QDBusConnection::sessionBus();
   if (!connection.registerObject(OBJECT_PATH, INTERFACE, this, flags)) {
@@ -57,22 +59,23 @@ QString Service::decodeFromDescriptor(QDBusUnixFileDescriptor fd, uint size, int
       if (buf != nullptr) {
         QImage::Format format;
         if (pixelFormat == 8) {
-          uchar* rgbbuf = (uchar*)malloc(height * width * 4);
+          uchar* rgbbuf = (uchar*)malloc(height * width * 3);
           // QVideoFrame::Format_BGRA32
           // The frame is stored using a 32-bit BGRA format (0xBBGGRRAA).
-          for (int nPos = 0; nPos < (height * width * 4); nPos += 4) {
-            uint16_t uRed = buf[nPos + 2];
-            uint16_t uGreen = buf[nPos + 1];
-            uint16_t uBlue = buf[nPos + 0];
+          int nPrePos = 0;
+          for (int nPos = 0; nPos < (height * width * 3); nPos += 3) {
+            uint8_t uRed = buf[nPrePos + 0];
+            uint8_t uGreen = buf[nPrePos + 1];
+            uint8_t uBlue = buf[nPrePos + 1];
+            nPrePos += 4;
 
             // QVideoFrame::Format_ARGB32
             // 32-bit RGB format (0xffRRGGBB). This is equivalent to QImage::Format_RGB32
             rgbbuf[nPos + 0] = uRed;
             rgbbuf[nPos + 1] = uGreen;
             rgbbuf[nPos + 2] = uBlue;
-            rgbbuf[nPos + 3] = 0xff;
           }
-          format = QImage::Format_ARGB32;
+          format = QImage::Format_RGB888;
 
           image = new QImage(rgbbuf, width, height, format, Service::imageCleanupHandler, (void*)rgbbuf);
         }
@@ -80,7 +83,18 @@ QString Service::decodeFromDescriptor(QDBusUnixFileDescriptor fd, uint size, int
           format = QVideoFrame::imageFormatFromPixelFormat((QVideoFrame::PixelFormat)pixelFormat);
           image = new QImage(buf, width, height, format);
         }
-        QImage* scaled = new QImage(image->scaled(width / 4.0, height / 4.0));
+        QImage* scaled = new QImage(image->scaled(800, 800 * height / width));
+//        QImage* scaled = image;
+//        m_facetracker->update(scaled);
+//        if (!m_facetracker->trackedBox().isEmpty()) {
+//          QPainter painter(scaled);
+//          QPen pen(Qt::red);
+//          pen.setWidth(4.0);
+//          painter.setBrush(Qt::NoBrush);
+//          painter.setPen(pen);
+//          painter.drawRect(m_facetracker->trackedBox());
+//          painter.end();
+//        }
         m_server->setNextImage(scaled);
         delete image;
 
