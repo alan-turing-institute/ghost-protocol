@@ -1,33 +1,37 @@
+import time
+import json
 import threading
 import websockets.sync.client
 from pynput import keyboard
 
-SERVER_URL = "ws://localhost:9000"
+SERVER_URL = "ws://10.10.100.91:9000"
 KEYS = {"w", "a", "s", "d"}
 
 ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
 print("Use W/A/S/D to send messages. Ctrl+C to quit.")
 
+# starting position
+x = 1.75
+y = 5.0
+z = 1.7
 
-messages = {
-    "w": {"x": 0, "y":0, "z": 10, "speed": 10},
-    "a": {"x": 0, "y":0, "z": -10, "speed": 10},
-    "s": {"x": -10, "y":0, "z": 0, "speed": 10},
-    "d": {"x": 10, "y":0, "z": 0, "speed": 10}
-}
+def move(direction="w"):
 
-def on_press(key):
-    try:
-        char = key.char
-        if char in KEYS:
-            ws.send(f"{messages[char]}")
-            print(f"[>] {messages[char]}")
-    except AttributeError:
-        pass
-
-
-
-listener = keyboard.Listener(on_press=on_press)
-listener.start()
-listener.join()
+    for _ in range(10):
+        if direction == "w":
+            y -= 0.3
+        elif direction == "s":
+            y += 0.3
+        elif direction == "a":
+            x += 0.3
+        elif direction == "d":
+            x -= 0.3
+        msg = {
+                "headLocation": {
+                    "location": [x, y, z],
+                    "timestamp": 1234
+                }
+            }
+        ws.send(json.dumps(msg))
+        time.sleep(0.1)
