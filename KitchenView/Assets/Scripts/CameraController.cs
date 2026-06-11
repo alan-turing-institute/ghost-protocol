@@ -127,7 +127,7 @@ public class CameraController : MonoBehaviour
  
         // Update smoothing state
         float now = Time.time;
-        _measuredInterval    = Mathf.Max(now - _lastUpdateTime, 0.016f);
+        _measuredInterval    = Mathf.Clamp(now - _lastUpdateTime, 0.016f, 0.5f);
         _lastUpdateTime      = now;
         _velocity            = (translated - _targetPosition) / _measuredInterval;
         _previousPosition    = _targetPosition;
