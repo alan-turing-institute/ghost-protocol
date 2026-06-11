@@ -32,7 +32,13 @@ public class CameraController : MonoBehaviour
  
     // Read-only: the final computed camera position after transform, before smoothing
     public Vector3 TranslatedPosition { get; private set; }
- 
+
+    [Header("Whether to smooth position")] 
+    public bool doSmoothing = true;
+
+    [Header("Whether to extrapolate position")]
+    public bool doExtrapolation = true;
+
     // ── WebSocket ────────────────────────────────────────────────────────────
     private WebSocket _ws;
     private readonly Queue<HeadLocationMessage> _messageQueue = new();
@@ -153,15 +159,20 @@ public class CameraController : MonoBehaviour
  
     Vector3 GetSmoothedPosition()
     {
-        if (_elapsedSinceUpdate <= _measuredInterval)
+        if (doSmoothing) {
+            if (_elapsedSinceUpdate <= _measuredInterval)
+            {
+                // Interpolate between last known and current target
+                float t = _elapsedSinceUpdate / _measuredInterval;
+                return Vector3.Lerp(_previousPosition, _targetPosition, t);
+            }
+            else
+            {
+                // No newer message arrived, so hold the last requested position.
+                return _targetPosition;
+            }
+        } else
         {
-            // Interpolate between last known and current target
-            float t = _elapsedSinceUpdate / _measuredInterval;
-            return Vector3.Lerp(_previousPosition, _targetPosition, t);
-        }
-        else
-        {
-            // No newer message arrived, so hold the last requested position.
             return _targetPosition;
         }
     }

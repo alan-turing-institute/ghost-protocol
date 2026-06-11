@@ -692,6 +692,14 @@ PrefabInstance:
       propertyPath: serverUrl
       value: ws://10.10.100.91:9000
       objectReference: {fileID: 0}
+    - target: {fileID: 6295550416947442014, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: doSmoothing
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6295550416947442014, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: doExtrapolation
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8703070950234848320, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
       propertyPath: m_Enabled
       value: 0
