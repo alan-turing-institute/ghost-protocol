@@ -41,6 +41,7 @@ class WebSocketClient:
         self._ws: websockets.asyncio.client.ClientConnection | None = None
         self._loop = asyncio.new_event_loop()
         self._ready = threading.Event()
+        self._closed = False
 
         t = threading.Thread(target=self._run_loop, daemon=True)
         t.start()
@@ -50,24 +51,43 @@ class WebSocketClient:
     def _run_loop(self) -> None:
         asyncio.set_event_loop(self._loop)
         self._loop.run_until_complete(self._connect())
+        self._loop.close()
 
     async def _connect(self) -> None:
-        async with websockets.asyncio.client.connect(self._uri) as ws:
-            self._ws = ws
-            self._ready.set()
-            await ws.wait_closed()
+        while not self._closed:
+            try:
+                async with websockets.asyncio.client.connect(self._uri) as ws:
+                    self._ws = ws
+                    self._ready.set()
+                    await ws.wait_closed()
+            except Exception:
+                pass
+            finally:
+                self._ws = None
+            if not self._closed:
+                await asyncio.sleep(0.3)
 
     def __call__(self, result: FaceResult | StereoResult) -> None:
         if isinstance(result, StereoResult) and (
             result.camera_0 is None or result.camera_1 is None
         ):
             return
+        if self._closed or self._ws is None:
+            return
         payload = json.dumps({"faceResult": dataclasses.asdict(result)})
         asyncio.run_coroutine_threadsafe(self._send(payload), self._loop)
 
     async def _send(self, payload: str) -> None:
         if self._ws is not None:
-            await self._ws.send(payload)
+            try:
+                await self._ws.send(payload)
+            except websockets.exceptions.ConnectionClosed:
+                self._ws = None
+
+    def close(self) -> None:
+        self._closed = True
+        if self._ws is not None:
+            asyncio.run_coroutine_threadsafe(self._ws.close(), self._loop)
 
     @property
     def on_face(self) -> Callable[[FaceResult], None]:

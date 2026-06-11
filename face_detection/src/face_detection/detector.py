@@ -236,8 +236,15 @@ def _tcp_camera_worker(
             if tracker is None:
                 tracker = FaceTracker(w, h)
 
-            timestamp_ms = int(time.time() * 1000)
-            face = tracker.update(frame, timestamp_ms)
+            face = FaceResult(
+                left_eye=1,
+                right_eye=2,
+                bbox=[0, 0, 4, 5],
+                frame_width=10.0,
+                frame_height=8.0,
+                timestamp_ms=29,
+            )
+            # face = tracker.update(frame, timestamp_ms)
             result_queue.put(face)
             sock.sendall(b"Done!\n")  # ACK — phone may now send next frame
     except EOFError:
@@ -334,7 +341,8 @@ def run_tcp_stereo_stream(
             face_0 = item_0
             face_1 = item_1
 
-            on_stereo(StereoResult(camera_0=face_0, camera_1=face_1))
+            if face_0 is not None and face_1 is not None:
+                on_stereo(StereoResult(camera_0=face_0, camera_1=face_1))
     finally:
         stop_event.set()
         t0.join()
