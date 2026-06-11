@@ -236,6 +236,7 @@ def _tcp_camera_worker(
             if tracker is None:
                 tracker = FaceTracker(w, h)
 
+            timestamp_ms = int(time.time() * 1000)
             face = tracker.update(frame, timestamp_ms)
             result_queue.put(face)
             sock.sendall(b"Done!\n")  # ACK — phone may now send next frame
