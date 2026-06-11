@@ -275,7 +275,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a04d6b1489846483aa17f3245c4b26db, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: '::'
   speed: 1
   radiusX: 3.05
@@ -365,8 +365,8 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name:
-  m_EditorClassIdentifier:
+  m_Name: 
+  m_EditorClassIdentifier: 
   m_UsePipelineSettings: 1
   m_AdditionalLightsShadowResolutionTier: 2
   m_CustomShadowLayers: 0
@@ -641,6 +641,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3043742588880704833, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3105558932783038924, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3323928066824808036, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3876250316232583526, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0.27306
@@ -681,9 +693,37 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4005938998869021769, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4447385586265109122, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5474019429287990969, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5511379588593417019, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6184284923996126618, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
       propertyPath: m_Name
       value: camera_setup_scene_without_kitchen
+      objectReference: {fileID: 0}
+    - target: {fileID: 6295550416947442014, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: serverUrl
+      value: ws://10.10.100.91:9000
+      objectReference: {fileID: 0}
+    - target: {fileID: 8703070950234848320, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8733163526323195124, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
