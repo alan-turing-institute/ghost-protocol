@@ -122,9 +122,17 @@ public class CameraController : MonoBehaviour
         float[] loc = msg.headLocation.location;
         Vector3 raw = new Vector3(loc[0], loc[1], loc[2]);
  
+        Debug.Log($"Starting vector {raw}");
+
         // World → Unity space
         Vector3 scaled      = Vector3.Scale(raw, positionScale);
+
+        Debug.Log($"Scaled Vector {scaled}");
+
         Vector3 translated  = scaled + positionOffset;
+
+        Debug.Log($"Translated vector {translated}");
+  
         TranslatedPosition  = translated;
  
         // Update smoothing state
