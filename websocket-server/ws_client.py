@@ -9,13 +9,13 @@ KEYS = {"w", "a", "s", "d"}
 
 ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
-print("Use W/A/S/D to send messages. Ctrl+C to quit.")
 
 # starting position
 x = 1.75
 y = 5.0
 z = 1.7
 
+<<<<<<< HEAD
 def move(direction="w"):
 
     for _ in range(10):
@@ -27,6 +27,24 @@ def move(direction="w"):
             x += 0.3
         elif direction == "d":
             x -= 0.3
+=======
+## starting position
+#x = 1.75
+#y = 5.0
+#z = 1.7
+
+def move(direction="w", x=1.75, y=5.0, z=1.7):
+
+    for _ in range(5):
+        if direction == "w":
+            y -= 0.1
+        elif direction == "s":
+            y += 0.1
+        elif direction == "a":
+            x += 0.1
+        elif direction == "d":
+            x -= 0.1
+>>>>>>> 254970d (update ws_client)
         msg = {
                 "headLocation": {
                     "location": [x, y, z],
