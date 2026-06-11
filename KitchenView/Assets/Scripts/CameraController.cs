@@ -121,11 +121,14 @@ public class CameraController : MonoBehaviour
     {
         float[] loc = msg.headLocation.location;
         Vector3 raw = new Vector3(loc[0], loc[1], loc[2]);
- 
-        Debug.Log($"Starting vector {raw}");
+
+        Vector3 worldToUnity = new Vector3(loc[1], loc[2], -loc[0]);
+        
+        Debug.Log($"Starting vector in world space 'raw': {raw}");        
+        Debug.Log($"Starting vector in Unity space 'worldToUnity': {worldToUnity}");
 
         // World → Unity space
-        Vector3 scaled      = Vector3.Scale(raw, positionScale);
+        Vector3 scaled      = Vector3.Scale(worldToUnity, positionScale);
 
         Debug.Log($"Scaled Vector {scaled}");
 
