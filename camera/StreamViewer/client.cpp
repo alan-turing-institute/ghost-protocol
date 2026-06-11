@@ -8,7 +8,7 @@ Client::Client(QObject *parent)
     m_socket = new QTcpSocket(this);
     m_socket->connect(m_socket, &QTcpSocket::readyRead, this, &Client::readyRead);
     qDebug() << "Connecting";
-    m_socket->connectToHost("10.10.100.86", 9991);
+    m_socket->connectToHost("10.10.100.154", 9991);
 }
 
 void Client::readyRead()
@@ -32,6 +32,7 @@ void Client::readyRead()
         m_socket->write("Done\n");
         m_length = 0;
         m_data.clear();
+        qDebug() << "Size:" << image.width() << image.height();
     }
 }
 

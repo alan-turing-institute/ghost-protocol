@@ -11,8 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Quick REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Quick WebSockets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick WebSockets REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -20,6 +20,10 @@ set(PROJECT_SOURCES
         videostill.h
         client.cpp
         client.h
+        project.cpp
+        project.h
+        wsclient.cpp
+        wsclient.h
         qml.qrc
 )
 

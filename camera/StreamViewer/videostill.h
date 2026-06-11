@@ -6,6 +6,8 @@
 #include <QImage>
 #include <QTimer>
 
+#include "project.h"
+
 class VideoStill : public QQuickPaintedItem
 {
     Q_OBJECT
@@ -17,6 +19,11 @@ public slots:
     QImage still() const;
     void setStill(QImage still);
     void updateImage();
+    void renderPoint(QPainter* painter, QVector3D position, QString name);
+
+    void adjustCameraAngle(float angle);
+    void adjustCameraHeight(float height);
+    void adjustCameraPosition(float x, float y);
 
 protected:
     void paint(QPainter* painter) override;
@@ -26,6 +33,7 @@ signals:
 
 private:
     QImage m_image;
+    Project m_project;
 };
 
 #endif // VIDEOSTILL_H
