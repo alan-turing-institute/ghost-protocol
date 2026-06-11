@@ -11,9 +11,9 @@ ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
 
 # starting position
-x = 8.66 # 1.75
-y = 1.65 # 5.0
-z = 9.57 # 1.7
+x = 1.8 # 1.75
+y = 5 # 5.0
+z = 1.6 # 1.7
 
 def step(direction):
     global x, y, z
