@@ -236,15 +236,7 @@ def _tcp_camera_worker(
             if tracker is None:
                 tracker = FaceTracker(w, h)
 
-            face = FaceResult(
-                left_eye=1,
-                right_eye=2,
-                bbox=[0, 0, 4, 5],
-                frame_width=10.0,
-                frame_height=8.0,
-                timestamp_ms=29,
-            )
-            # face = tracker.update(frame, timestamp_ms)
+            face = tracker.update(frame, timestamp_ms)
             result_queue.put(face)
             sock.sendall(b"Done!\n")  # ACK — phone may now send next frame
     except EOFError:
