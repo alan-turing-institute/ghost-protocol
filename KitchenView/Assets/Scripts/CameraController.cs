@@ -148,9 +148,8 @@ public class CameraController : MonoBehaviour
         }
         else
         {
-            // Message is late — extrapolate using last known velocity
-            float overtime = _elapsedSinceUpdate - _measuredInterval;
-            return _targetPosition + _velocity * overtime;
+            // No newer message arrived, so hold the last requested position.
+            return _targetPosition;
         }
     }
 }
