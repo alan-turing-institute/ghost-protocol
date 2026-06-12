@@ -38,6 +38,14 @@
 
   (displayln "connected.\n")
 
+  ;; Start a separate thread which reads, in case of keepalive pings
+  (thread
+   (λ ()
+     (let loop ()
+       (ws-recv the-server)
+       (loop))))
+  
+  
   (dynamic-wind ;; Ensure clean disconnection in case of ctrl-C
     void ; no pre-thunk needed
     (λ ()
