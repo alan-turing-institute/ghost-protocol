@@ -1,33 +1,61 @@
-import threading
+import sys
+import tty
+import termios
+import json
 import websockets.sync.client
-from pynput import keyboard
 
-SERVER_URL = "ws://localhost:9000"
+SERVER_URL = "ws://10.10.100.91:9000"
 KEYS = {"w", "a", "s", "d"}
 
 ws = websockets.sync.client.connect(SERVER_URL)
 print(f"Connected to {SERVER_URL}")
-print("Use W/A/S/D to send messages. Ctrl+C to quit.")
+
+# starting position
+x = 1.8 # 1.75
+y = 5 # 5.0
+z = 1.6 # 1.7
+
+def step(direction):
+    global x, y, z
+
+    if direction == "w":
+        z -= 0.3
+    elif direction == "s":
+        z += 0.3
+    elif direction == "a":
+        x += 0.3
+    elif direction == "d":
+        x -= 0.3
+    elif direction == "q":
+        y -= 0.3
+    elif direction == "e":
+        y += 0.3
+    else:
+        return  # ignore unknown keys
+
+    msg = {
+        "headLocation": {
+            "location": [x, y, z],
+            "timestamp": 1234
+        }
+    }
+    ws.send(json.dumps(msg))
+    print(f"[{direction}] -> x={x:.1f} y={y:.1f} z={z:.1f}", end="\r\n")
 
 
-messages = {
-    "w": {"x": 0, "y":0, "z": 10, "speed": 10},
-    "a": {"x": 0, "y":0, "z": -10, "speed": 10},
-    "s": {"x": -10, "y":0, "z": 0, "speed": 10},
-    "d": {"x": 10, "y":0, "z": 0, "speed": 10}
-}
-
-def on_press(key):
+def read_key():
+    fd = sys.stdin.fileno()
+    old = termios.tcgetattr(fd)
     try:
-        char = key.char
-        if char in KEYS:
-            ws.send(f"{messages[char]}")
-            print(f"[>] {messages[char]}")
-    except AttributeError:
-        pass
+        tty.setraw(fd)
+        return sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 
-
-listener = keyboard.Listener(on_press=on_press)
-listener.start()
-listener.join()
+print("WASD/QE to move, ESC or Ctrl-C to quit")
+while True:
+    key = read_key().lower()
+    if key in ("\x1b", "\x03"):  # ESC or Ctrl-C
+        break
+    step(key)

@@ -1,0 +1,17 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+
+<node name="/uk/ac/turing/stream">
+  <interface name="uk.ac.turing.stream">
+    <method name="decodeFromDescriptor">
+      <arg direction="out" type="s" name="result"/>
+      <arg direction="in" type="h" name="descriptor"/>
+      <arg direction="in" type="u" name="buffer_size"/>
+      <arg direction="in" type="i" name="width"/>
+      <arg direction="in" type="i" name="height"/>
+      <arg direction="in" type="i" name="pixelFormat"/>
+    </method>
+    <method name="quit">
+    </method>
+   </interface>
+</node>

@@ -11,3 +11,9 @@ The steps will be:
 4. Use pixel coordiantes from both cameras to locate person in 3D space,
 5. Adjust image on screen according to persons view point.
 
+## Architecture
+
+<p align="center">
+<img width="96%" maxwidth="1024" alt="Ghost Protocol high-level architecture diagram" src="docs/architecture.svg"/>
+</p>
+
