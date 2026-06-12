@@ -214,8 +214,10 @@ def _tcp_camera_worker(
 ) -> None:
     """Connect to a TCP stream, read size-prefixed JPEG frames, run face detection."""
     try:
+        print(f"Creating connection to {host}:{port}")
         sock = socket.create_connection((host, port))
-    except OSError:
+    except OSError as e:
+        print(f"Error caught, exiting. Error details: {e}")
         result_queue.put(_STREAM_DONE)
         return
 
@@ -297,6 +299,11 @@ def run_tcp_stereo_stream(
     on_stereo: Callable[[StereoResult], None] | None = None,
 ) -> None:
     """Connect to two TCP JPEG streams and emit paired StereoResults."""
+
+    print("Checking model availability")
+    _download_model()
+    print("Model downloaded")
+
     if on_stereo is None:
 
         def on_stereo(r: StereoResult) -> None:
@@ -326,9 +333,11 @@ def run_tcp_stereo_stream(
                 item_0 = queue_0.get(timeout=5.0)
                 item_1 = queue_1.get(timeout=5.0)
             except Empty:
+                print("Queue empty, exiting.")
                 break
 
-            if item_0 is _STREAM_DONE or item_1 is _STREAM_DONE:
+            if _STREAM_DONE in (item_0, item_1):
+                print("Stream done, exiting")
                 break
 
             face_0 = item_0
@@ -337,6 +346,7 @@ def run_tcp_stereo_stream(
             if face_0 is not None and face_1 is not None:
                 on_stereo(StereoResult(camera_0=face_0, camera_1=face_1))
     finally:
+        print("Stopping and joining")
         stop_event.set()
         t0.join()
         t1.join()
