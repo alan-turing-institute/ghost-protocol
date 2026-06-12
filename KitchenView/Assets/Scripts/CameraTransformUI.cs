@@ -23,24 +23,24 @@ public class CameraTransformUI : MonoBehaviour
         var root = GetComponent<UIDocument>().rootVisualElement;
 
         _positionReadout = root.Q<Label>("position-readout");
-        _offsetField     = root.Q<Vector3Field>("offset-field");
-        _scaleField      = root.Q<Vector3Field>("scale-field");
-        _rotationField   = root.Q<Vector3Field>("rotation-field");
+        // _offsetField     = root.Q<Vector3Field>("offset-field");
+        // _scaleField      = root.Q<Vector3Field>("scale-field");
+        // _rotationField   = root.Q<Vector3Field>("rotation-field");
 
-        // Initialise fields from current controller values
-        _offsetField.value   = controller.positionOffset;
-        _scaleField.value    = controller.positionScale;
-        _rotationField.value = controller.rotationOffset;
+        // // Initialise fields from current controller values
+        // _offsetField.value   = controller.positionOffset;
+        // _scaleField.value    = controller.positionScale;
+        // _rotationField.value = controller.rotationOffset;
 
-        // Push changes from UI → controller
-        _offsetField.RegisterValueChangedCallback(evt =>
-            controller.positionOffset = evt.newValue);
+        // // Push changes from UI → controller
+        // _offsetField.RegisterValueChangedCallback(evt =>
+        //     controller.positionOffset = evt.newValue);
 
-        _scaleField.RegisterValueChangedCallback(evt =>
-            controller.positionScale = evt.newValue);
+        // _scaleField.RegisterValueChangedCallback(evt =>
+        //     controller.positionScale = evt.newValue);
 
-        _rotationField.RegisterValueChangedCallback(evt =>
-            controller.rotationOffset = evt.newValue);
+        // _rotationField.RegisterValueChangedCallback(evt =>
+        //     controller.rotationOffset = evt.newValue);
 
         _timestampReadout = root.Q<Label>("timestamp-readout");
     }
@@ -62,6 +62,12 @@ public class CameraTransformUI : MonoBehaviour
            Vector3 p = controller.TranslatedPosition;
            _positionReadout.text = $"x: {p.x:F3}   y: {p.y:F3}   z: {p.z:F3}";
        }
+       if (_timestampReadout == null)
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            _timestampReadout = root.Q<Label>("timestamp-readout");
+            if (_timestampReadout == null) return; // not ready yet, try again next frame
+        }
        _timestampReadout.text = controller.LastTimestamp.ToString();
     }
 }

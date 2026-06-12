@@ -114,6 +114,11 @@ public class CameraController : MonoBehaviour
         try
         {
             var msg = JsonUtility.FromJson<HeadLocationMessage>(json);
+            if (msg?.headLocation?.location == null || msg.headLocation.location.Length < 3)
+            {
+                Debug.LogWarning($"Malformed message, ignoring: {json}");
+                return;
+            }
             lock (_messageQueue) _messageQueue.Enqueue(msg);
             Debug.Log($"Received message {msg}");
         }
@@ -121,6 +126,7 @@ public class CameraController : MonoBehaviour
         {
             Debug.LogWarning($"Bad message: {json}\n{e.Message}");
         }
+
     }
  
     // ── Transform + smoothing target ─────────────────────────────────────────
