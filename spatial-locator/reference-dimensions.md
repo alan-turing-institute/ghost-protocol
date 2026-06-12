@@ -1,0 +1,83 @@
+# Location of reference points
+
+## Coordinate system (x, y, z)
+
+All relative directions are taken as if one had one's back to the Big
+Screen, looking towards the main entrance. All units are metres.
+
+- x-axis: left to right along the bottom of the Big Screen at floor
+  level.
+- y-axis: normal to the Big Screen, towards the entrance.
+- z-axis: vertical, up from the floor.
+
+(That ought to be a right-handed coordinate system.)
+
+## Big screen
+
+3.68m x 2.06m
+
+(0, 0, 0.27) -- (3.68, 0, 0.27) -- (3.68, 0, 2.33) -- (0, 0, 2.33)
+
+## Tripods
+
+The centre of the phone, when placed horizontally, height above floor:
+
+- z = 1.66m when the tripod is fully extended;
+- z = 1.39m with the topmost segment of the tripod closed;
+  z = 1.53m was an ad hoc position where a photograph was taken.
+
+## Reception desk
+
+(-0.32, 7.26, 1.1)
+
+The reference point is the top right corner of the desk when looking
+from the Screen (top left if you were checking in at reception).
+
+## Bar
+
+(3.17, 7.10, 1.1)
+
+The reference point is the top left corner of the bar, looking from
+the screen.
+
+## First-aid kit
+
+(2.06, 9.12, 1.61)
+
+The reference point is the centre of the green cross.
+
+## CCTV camera on the ceiling
+
+(1.14, 3.66, 2.48)
+
+Reference point is (roughly!) the centre of the bulbous glass bit.
+
+## Taped cross on the floor
+
+(1.84, 3.71, 0)
+
+## Inner top right of main entrance framework
+
+(1.77, 2.22, 9.4)
+
+# Cameras
+
+A single one of the nine displays is 1.215m x 0.68m
+
+The camera is 4000 x 3000 pixels
+
+At the floor marker (3.71m away) the central display is 1082 x 613
+pixels.
+
+The focal length is the size, in pixels, of an object of size 1m at a
+distance of 1m. l is size on screen, L is size in reality, d is
+distance. Then:
+
+  l = f L/d,
+
+or f =ld/L. Hence f = 3,307 (horizontal) and 3,344 (vertical). Let's
+average to 3,326.
+
+The image metadata says: focal length: 4.05, aperture 1.696,
+resolution 72 (dpi?).
+
