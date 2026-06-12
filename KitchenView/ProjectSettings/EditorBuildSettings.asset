@@ -11,8 +11,11 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/GetStarted_Scene.unity
     guid: 6888813f2bd9e4521b9b1343abf0c60f
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/underwater.unity
     guid: f617e67adcc34450da48f55cefb47d9f
+  - enabled: 1
+    path: Assets/Scenes/DebugKitchen.unity
+    guid: 72c769d1a125444558c9bc7e45a41448
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
