@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ghost Protocol</title>
+  <title>M</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -96,6 +96,29 @@
     .placeholder svg {
       opacity: 0.2;
     }
+
+    .fullscreen-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 10;
+      background: rgba(0,0,0,0.5);
+      border: none;
+      color: rgba(255,255,255,0.7);
+      width: 36px;
+      height: 36px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(0,0,0,0.75);
+      color: #fff;
+    }
   </style>
 </head>
 <body>
@@ -109,6 +132,11 @@
   </nav>
 
   <div class="viewport" id="viewport">
+    <button class="fullscreen-btn" id="fullscreen-btn" title="Fullscreen" style="display: none;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+    </button>
     <div class="placeholder" id="placeholder">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
         <rect x="2" y="3" width="20" height="14" rx="2"/>
@@ -121,8 +149,8 @@
   <script>
     const scenes = [
       { id: "kitchen",     label: "Kitchen" },
-      { id: "space",      label: "Space" },
-      { id: "underwater", label: "Underwater" },
+      { id: "underwater",      label: "Underwater" },
+      { id: "space", label: "Space" },
     ];
 
     let activeId = null;
@@ -131,6 +159,15 @@
     const picker = document.getElementById("scene-picker");
     const viewport = document.getElementById("viewport");
     const placeholder = document.getElementById("placeholder");
+    const fullscreenBtn = document.getElementById("fullscreen-btn");
+
+    fullscreenBtn.addEventListener("click", () => {
+      if (viewport.requestFullscreen) {
+        viewport.requestFullscreen();
+      } else if (viewport.webkitRequestFullscreen) {
+        viewport.webkitRequestFullscreen();
+      }
+    });
 
     scenes.forEach(scene => {
       const btn = document.createElement("button");
@@ -152,6 +189,7 @@
       if (activeIframe) activeIframe.remove();
 
       placeholder.style.display = "none";
+      fullscreenBtn.style.display = "flex";
 
       const iframe = document.createElement("iframe");
       iframe.src = `scenes/${id}/index.html`;
