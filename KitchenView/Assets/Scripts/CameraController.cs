@@ -38,6 +38,8 @@ public class CameraController : MonoBehaviour
 
     // [Header("Whether to extrapolate position")]
     // public bool doExtrapolation = true;
+    public long LastTimestamp { get; private set; }
+
 
     // ── WebSocket ────────────────────────────────────────────────────────────
     private WebSocket _ws;
@@ -125,6 +127,7 @@ public class CameraController : MonoBehaviour
  
     void ApplyNewTarget(HeadLocationMessage msg)
     {
+        LastTimestamp = msg.headLocation.timestamp;
         float[] loc = msg.headLocation.location;
         Vector3 raw = new Vector3(loc[0], loc[1], loc[2]);
 

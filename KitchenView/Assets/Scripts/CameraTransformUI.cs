@@ -16,6 +16,7 @@ public class CameraTransformUI : MonoBehaviour
     private Vector3Field _offsetField;
     private Vector3Field _scaleField;
     private Vector3Field _rotationField;
+    private Label _timestampReadout;
 
     void OnEnable()
     {
@@ -40,6 +41,8 @@ public class CameraTransformUI : MonoBehaviour
 
         _rotationField.RegisterValueChangedCallback(evt =>
             controller.rotationOffset = evt.newValue);
+
+        _timestampReadout = root.Q<Label>("timestamp-readout");
     }
 
     void Update()
@@ -59,5 +62,6 @@ public class CameraTransformUI : MonoBehaviour
            Vector3 p = controller.TranslatedPosition;
            _positionReadout.text = $"x: {p.x:F3}   y: {p.y:F3}   z: {p.z:F3}";
        }
+       _timestampReadout.text = controller.LastTimestamp.ToString();
     }
 }

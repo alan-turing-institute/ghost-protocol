@@ -1,68 +1,11 @@
-<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:VisualElement name="panel" style="
-        position: absolute;
-        top: 16px;
-        left: 16px;
-        width: 320px;
-        background-color: rgba(0, 0, 0, 0.72);
-        border-radius: 8px;
-        padding: 16px;
-    ">
-        <!-- Header -->
-        <ui:Label name="title" text="Camera Transform" style="
-            font-size: 13px;
-            color: rgba(255,255,255,0.45);
-            -unity-font-style: bold;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-        "/>
-
-        <!-- Live position readout -->
-        <ui:VisualElement name="readout-section" style="
-            margin-bottom: 16px;
-            border-bottom-width: 1px;
-            border-bottom-color: rgba(255,255,255,0.1);
-            padding-bottom: 12px;
-        ">
-            <ui:Label text="CURRENT POSITION" style="
-                font-size: 10px;
-                color: rgba(255,255,255,0.3);
-                margin-bottom: 4px;
-                letter-spacing: 1px;
-            "/>
-            <ui:Label name="position-readout" text="x: 0.000   y: 0.000   z: 0.000" style="
-                font-size: 13px;
-                color: rgba(120,220,160,0.9);
-                -unity-font-style: italic;
-            "/>
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="panel" style="position: absolute; top: 16px; left: 16px; width: 320px; background-color: rgba(0, 0, 0, 0.72); border-radius: 8px; padding: 16px;">
+        <ui:Label name="title" text="Camera Transform" style="font-size: 13px; color: rgba(255, 255, 255, 0.45); -unity-font-style: bold; margin-bottom: 12px; letter-spacing: 1px;"/>
+        <ui:VisualElement name="readout-section" style="margin-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(255, 255, 255, 0.1); padding-bottom: 12px;">
+            <ui:Label text="CURRENT POSITION" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-bottom: 4px; letter-spacing: 1px;"/>
+            <ui:Label name="position-readout" text="x: 0.000   y: 0.000   z: 0.000" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
+            <ui:Label text="LAST TIMESTAMP" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-top: 8px; margin-bottom: 4px; letter-spacing: 1px;"/>
+            <ui:Label name="timestamp-readout" text="-" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
         </ui:VisualElement>
-
-        <!-- Offset -->
-        <ui:Label text="POSITION OFFSET" style="
-            font-size: 10px;
-            color: rgba(255,255,255,0.3);
-            margin-bottom: 4px;
-            letter-spacing: 1px;
-        "/>
-        <ui:Vector3Field name="offset-field" style="margin-bottom: 12px;" />
-
-        <!-- Scale -->
-        <ui:Label text="POSITION SCALE" style="
-            font-size: 10px;
-            color: rgba(255,255,255,0.3);
-            margin-bottom: 4px;
-            letter-spacing: 1px;
-        "/>
-        <ui:Vector3Field name="scale-field" style="margin-bottom: 12px;" />
-
-        <!-- Rotation -->
-        <ui:Label text="ROTATION OFFSET (DEGREES)" style="
-            font-size: 10px;
-            color: rgba(255,255,255,0.3);
-            margin-bottom: 4px;
-            letter-spacing: 1px;
-        "/>
-        <ui:Vector3Field name="rotation-field" style="margin-bottom: 4px;" />
-
     </ui:VisualElement>
 </ui:UXML>
