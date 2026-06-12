@@ -28,13 +28,15 @@
 ;; -------------------------------------------------------------------------------
 ;; Global state
 
-;; (state number? number? head? head? camera? camera?)
-(struct state (last-timestamp δt lft rgt caml camr) #:mutable #:transparent)
+;; (state number? number? 
+(struct state (last-timestamp δt lag
+               lft rgt caml camr) ; head? head? camera? camera?
+  #:mutable #:transparent)
 
 ;; A global, mutable variable with the current head locations
 ;; Used for updating the canvas
 (define *global-state*
-  (state (current-milliseconds) 0.1
+  (state (current-milliseconds) 0.1 0.0
          (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0)
          (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0)
          camera/left
@@ -94,6 +96,7 @@
              ;; Wait until message available
              (define msg
                (string->jsexpr (sync (ws-recv-evt the-server))))
+             (define now (current-milliseconds)) ; To compute the lag
              (parameterize ([current-eventspace *es*])
                ;; Despatch on message type
                ;; Much imperative
@@ -104,10 +107,12 @@
                   (define-values (lft rgt)
                     (parse-message (hash-ref msg 'faceResult)))
                   
-                  ;; Update moving-average time between frames
+                  ;; Update moving-average time between frames and lag
                   (define new-ts (head-t lft))
                   (define new-δt (+ (* 0.25 (- new-ts (state-last-timestamp *global-state*)))
                                     (* 0.75 (state-δt *global-state*))))
+                  (define new-lag (+ (* 0.25 (- now new-ts))
+                                     (* 0.75 (state-lag *global-state*))))
 
                   ;; Estimate location of the image
                   (define r1 (compute-ray lft (state-caml *global-state*)))
@@ -124,6 +129,7 @@
                    (λ ()
                      (set-state-last-timestamp! *global-state* new-ts)
                      (set-state-δt! *global-state* new-δt)
+                     (set-state-lag! *global-state* new-lag)
                      (set-state-lft! *global-state* lft)
                      (set-state-rgt! *global-state* rgt)
                      
@@ -163,6 +169,7 @@
   (send dc set-scale 1.0 1.0)
   (send dc set-text-foreground "blue")
   (send dc draw-text (format "fps: ~a" (~r (/ 1000 (state-δt st)) #:precision 2)) 0 0)
+  (send dc draw-text (format "lag: ~ams" (~r (state-lag st) #:precision 0)) 0 16)
 
   (define-values (wd _) (send dc get-size))
   

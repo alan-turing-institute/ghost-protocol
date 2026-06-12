@@ -3,7 +3,7 @@
 (require racket/class)
 (require racket/gui/base)
 
-(require (only-in racket/math pi))
+(require (only-in racket/format ~r))
 
 (require net/rfc6455
          net/url
@@ -17,13 +17,18 @@
 ;; width : width of the window, in metres
 ;; pos : position of the head
 ;; ts : moving-average timestamp
-(struct state (lcam rcam width pos ts) #:mutable #:transparent)
-(define *state* (state camera/left camera/right 8 '(2 4 1.8) 0))
+(struct state (lcam rcam width pos ts lag) #:mutable #:transparent)
+(define *state* (state camera/left camera/right 8 '(2 4 1.8) 0 0))
 
 ;; ----------------------------------------------------------------------
 
 ;; drawing-context? state? 
 (define (draw-the-scene dc st)
+  (send dc set-scale 1.0 1.0)
+  (send dc set-origin 0 0)
+  (send dc set-text-foreground "blue")
+    (send dc draw-text (format "lag: ~ams" (~r (state-lag st) #:precision 0)) 2 2)
+
   ;; Draw in world x-y coordinates, in metres. Set up location so that
   ;; the centre of the screen is in the middle of the display and 0.5m
   ;; up from the bottom edge
@@ -163,24 +168,23 @@
              ;; Wait until message available
              (define msg
                (string->jsexpr (sync (ws-recv-evt the-server))))
+             (define now (current-milliseconds))
              (parameterize ([current-eventspace *es*])
                ;; Despatch on message type
                ;; Much imperative
                (cond
                  [(not (hash? msg)) (void)]
                  [(hash-has-key? msg 'headLocation) ; Received head location data
-                  ;; (displayln (hash-ref msg 'faceResult))
                   (define-values (the-head ts)
                     (parse-message (hash-ref msg 'headLocation)))
-                  
-                  ;; Update moving-average time between frames
-                  ;; (define new-δt (+ (* 0.25 (- new-ts (state-last-timestamp *global-state*)))
-                  ;;                   (* 0.75 (state-δt *global-state*))))
 
+                  (define new-lag (+ (* 0.25 (- now ts))
+                                     (* 0.75 (state-lag *state*))))
 
                   (queue-callback
                    (λ ()
                      (set-state-pos! *state* the-head)
+                     (set-state-lag! *state* new-lag)
                      (send *canvas* refresh)))]))
              (loop)))
          )
