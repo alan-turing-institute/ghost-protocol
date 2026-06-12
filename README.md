@@ -17,3 +17,10 @@ The steps will be:
 <img width="96%" maxwidth="1024" alt="Ghost Protocol high-level architecture diagram" src="docs/architecture.svg"/>
 </p>
 
+## Running
+
+1. Start websocket server (see ./websocket-server).
+1. Start a webserver to serve the Unity webGL build changing into the `./KitchenView/Builds/testbuild` directory and running something like `python3 -m http.server 8000`.
+1. Having installed Racket, e.g. with HomeBrew, start the spatial-locator server as per the instructions in its README.
+1. Start the face-detection server, with the [stream_face_results_to_ws.py](face_detection/stream_face_results_to_ws.py) script.
+1. Locate the two phones, turn them on, SSH onto them and start the webservers that stream the video.
