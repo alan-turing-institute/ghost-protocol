@@ -28,15 +28,19 @@
 ;; -------------------------------------------------------------------------------
 ;; Global state
 
-;; (state number? number? head? head?)
-(struct state (last-timestamp δt lft rgt) #:mutable #:transparent)
+;; (state number? number? head? head? camera? camera?)
+(struct state (last-timestamp δt lft rgt caml camr) #:mutable #:transparent)
 
 ;; A global, mutable variable with the current head locations
 ;; Used for updating the canvas
 (define *global-state*
   (state (current-milliseconds) 0.1
          (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0)
-         (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0)))
+         (head '(0 0) '(0 0) '(0 0 0 0) 4000 3000 0)
+         camera/left
+         camera/right))
+
+;; ----------------------------------------------------------------------
 
 (module+ main
 
@@ -82,7 +86,7 @@
   (thread
    (λ ()
      (dynamic-wind ;; Ensure clean disconnection in case of ctrl-C
-       void ; no pre-thunk needed
+       void ; no pre-thunk neededm
        ;; Main loop
        (λ ()
          (let loop ()
@@ -95,18 +99,29 @@
                ;; Much imperative
                (cond
                  [(not (hash? msg)) (void)]
-                 [(hash-has-key? msg 'faceResult)
+                 [(hash-has-key? msg 'faceResult) ; Received face location data
+                  ;; (displayln (hash-ref msg 'faceResult))
+                  (define-values (lft rgt)
+                    (parse-message (hash-ref msg 'faceResult)))
+                  
+                  ;; Update moving-average time between frames
+                  (define new-ts (head-t lft))
+                  (define new-δt (+ (* 0.25 (- new-ts (state-last-timestamp *global-state*)))
+                                    (* 0.75 (state-δt *global-state*))))
+
+                  ;; Estimate location of the image
+                  (define r1 (compute-ray lft (state-caml *global-state*)))
+                  (define r2 (compute-ray rgt (state-camr *global-state*)))
+                  (define p (ray-intersect r1 r2))
+
+                  ;; Send a message when we have found the intersection
+                  (when p
+                    ;; (displayln p)
+                    (broadcast-position! p new-ts the-server))
+                  
+                  ;; Update global state and refresh display
                   (queue-callback
                    (λ ()
-                     (define-values (lft rgt)
-                       (parse-message (hash-ref msg 'faceResult)))
-
-                     ;; Update moving-average time between frames
-                     (define new-ts (head-t lft))
-                     (define new-δt (+ (* 0.25 (- new-ts (state-last-timestamp *global-state*)))
-                                       (* 0.75 (state-δt *global-state*))))
-
-                     ;; Update global state
                      (set-state-last-timestamp! *global-state* new-ts)
                      (set-state-δt! *global-state* new-δt)
                      (set-state-lft! *global-state* lft)
@@ -127,26 +142,40 @@
   
 
 ;; ----------------------------------------------------------------------
-;; Canvas drawing
+;; Derivation of ray from camera image-snip%
 
+;; compute-ray : head? camera? -> (p r)
+(define (compute-ray face cam)
+  ;; find the mid-point of the eyes
+  (define p (smul 0.5 (vec+ (head-left-eye face) (head-right-eye face))))
+
+  ;; In case this image has been downscaled, return to original camera scaling
+  (define ps (smul (/ (camera-wd cam) (head-wd face)) p))
+
+  ;; Compute the ray
+  (camera->world ps cam))
+
+
+;; ----------------------------------------------------------------------
+;; Canvas drawing
 
 (define (draw-the-view dc st)
   (send dc set-scale 1.0 1.0)
   (send dc set-text-foreground "blue")
-  (send dc draw-text (format "fps: ~a" (~r (/ 1000 (state-δt *global-state*)) #:precision 2)) 0 0)
+  (send dc draw-text (format "fps: ~a" (~r (/ 1000 (state-δt st)) #:precision 2)) 0 0)
 
   (define-values (wd _) (send dc get-size))
   
   ;; Left head
   (send dc set-pen "red" 2 'solid)
   (send dc set-brush "red" 'solid)
-   (draw-face dc (state-lft *global-state*) wd)
+  (draw-face dc (state-lft st) wd)
 
   ;; Right head
   (send dc set-pen "green" 2 'solid)
   (send dc set-brush "green" 'solid)
-  (draw-face dc (state-rgt *global-state*) wd)
-
+  (draw-face dc (state-rgt st) wd)
+  
   )
 
 (define (draw-face dc face wd)

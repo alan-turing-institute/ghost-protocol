@@ -30,14 +30,20 @@
 
 A camera is defined by: its location, $\vec{c}$; a unit vector,
 $\hat{\vec{n}}$, pointing in the direction of view; a unit vector,
-$\hat{\vec{u}}$, orthogonal to $\hat{\vec{n}}$ and defining the ``horizontal'' of
-the image plane; and a ``focal length,'' $f$. The focal length has
-units of ``pixels per metre'' and is the size, in the camera frame, of
-an object of size \qty{1}{\metre} at a distance of~\qty{1}{\metre} in
-the world frame.
+$\hat{\vec{u}}$, orthogonal to $\hat{\vec{n}}$ and defining the
+``horizontal'' of the image plane; and a ``focal length,'' $f$. It's
+convenient to define $\hat{\vec{v}}= \hat{\vec{u}}\times\hat{\vec{n}}$,
+a unit vector pointing ``up'' in the camera frame. The focal length
+has units of ``pixels per metre'' and is the size, in the camera
+frame, of an object of size \qty{1}{\metre} at a distance
+of~\qty{1}{\metre} in the world frame.
 
-The image of a point $\vec{p}$ (in the real world) is a pair, $(u,v)$ (on
-the image taken by the camera) determined as follows.
+Coordinates on the image taken by the camera are written $(u,v)$. The
+origin is the centre of the image (rather than, as is conventional in
+images, the top-left of the image).
+
+The coordinates $(u,v)$ of the image of a point $\vec{p}$ (in the real
+world) is determined as follows.
 \begin{enumerate}
 \item Compute $\vec{x} = \vec{p}-\vec{c}$, the vector from the camera
   to the point;
@@ -55,7 +61,7 @@ the image taken by the camera) determined as follows.
   and
 \begin{equation*}
   \begin{split}
-    y &= \vec{x}\cdot(\hat{\vec{u}}\times\hat{\vec{n}})f/d. \\
+    v &= (\vec{x}\cdot\hat{\vec{v}})f/d. \\
   \end{split}
 \end{equation*}
 \end{enumerate}
@@ -71,6 +77,65 @@ $\hat{\vec{r}}$:
 \item A normalised ray direction is $\hat{\vec{r}} = \vec{r}/\left|\vec{r}\right|$.
 \end{enumerate}
 
+\section*{Ray intersection}
+
+Suppose one has two rays, $\vec{c}_1 + \lambda \vec{r}_1$ and
+$\vec{c}_2 + \mu\vec{r}_2$ (where $\vec{r}_1$ and $\vec{r}_2$ are not
+necessarily normalised). Their ``approximate intersection'' is the
+midpoint on the shortest line joining the two rays. That shortest line
+runs from, say, $\vec{p}(s) = \vec{c}_1 + s \vec{r}_1$ to
+$\vec{q}(t) = \vec{c}_2 + t \vec{r}_2$ for some $s$ and $t$. Critically,
+$\vec{p}(s)-\vec{q}(t)$ is perpendicular to both rays.
+
+Writing $\vec{r} = \vec{c}_1 - \vec{c}_2$, we thus obtain:
+\begin{equation}
+  \begin{split}
+    \vec{r}_1\cdot \bigl( \vec{r} + s\vec{r_1} - t\vec{r_2} \bigr)
+    &=0, \qquad\text{and} \\
+    \vec{r}_2\cdot \bigl( \vec{r} + s\vec{r_1} - t\vec{r_2} \bigr) &=0,
+  \end{split}
+\end{equation}
+or, rewriting:
+\begin{equation}
+  \begin{pmatrix}
+    \vec{r}_1\cdot\vec{r} \\
+    \vec{r}_2\cdot\vec{r} 
+  \end{pmatrix} =   
+  \begin{pmatrix}
+    -\vec{r}_1\cdot\vec{r}_1 & \vec{r}_1\cdot\vec{r}_2 \\
+    -\vec{r}_1\cdot\vec{r}_2 & \vec{r}_2\cdot\vec{r}_2 
+  \end{pmatrix}
+  \begin{pmatrix}
+    s \\
+    t
+  \end{pmatrix}.
+\end{equation}
+Thus, writing
+\begin{equation}
+  a = \vec{r}_1\cdot\vec{r}_1,\quad
+  b = \vec{r}_1\cdot\vec{r}_2,\quad
+  c = \vec{r}_2\cdot\vec{r}_2,\quad
+  d = \vec{r}_1\cdot\vec{r},\quad
+  e = \vec{r}_2\cdot\vec{r},
+\end{equation}
+we get
+\begin{equation}
+  \begin{pmatrix}
+    d \\ e
+  \end{pmatrix} =   
+  \begin{pmatrix}
+    -a & b \\
+    -b & c
+  \end{pmatrix}
+  \begin{pmatrix}
+    s \\
+    t
+  \end{pmatrix}.
+\end{equation}
+Whose solution is:
+\begin{equation}
+  s = \frac{cd-be}{b^2-ac}\quad\text{and}\quad t = \frac{bd-ae}{b^2-ac}.
+\end{equation}
 
 
 \section*{Euler angles}

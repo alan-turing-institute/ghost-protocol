@@ -4,15 +4,19 @@
 
 (provide (struct-out camera)
          make-camera
+         camera/xy->uv
+         camera/uv->xy
          
          ;; Conversion from camera frame to world frame
          world->camera
          camera->world
+         ray-intersect
          
          ;; Utilities for rotations
          euler->rotation-matrix
          rotation-matrix->euler
          rotation-matrix->unit-vectors
+         unit-vectors->rotation-matrix
 
          ;; Utilities for 3d
          vec+ vec- :x :y :z x+ y+ z+
@@ -26,8 +30,13 @@
 (define :y cadr)
 (define :z caddr)
 
-(define (vec+ p1 p2)
-  (map + p1 p2))
+(define :u car)
+(define :v cadr)
+
+;; All these work for 2d and 3d vectors
+
+(define (vec+ . ps)
+  (apply map + ps))
 
 (define (vec- p1 p2)
   (map - p1 p2))
@@ -41,6 +50,8 @@
 (define ex '(1 0 0))
 (define ey '(0 1 0))
 (define ez '(0 0 1))
+
+;; These only work for 3d
 
 (define (x+ p dx)
   (vec+ p (list dx 0 0)))
@@ -95,10 +106,39 @@
     (camera/uv->xy (list u v) cam)))
 
 ;; Convert a location on the image to a ray in space A ray is a pair of two vectors, (p r) where p is
-;; a point on the ray and r is a unit direction
+;; a point on the ray and r is a (not necessarily unit) direction
 (define (camera->world xy cam)
-  #f)
+  (define uv (camera/xy->uv xy cam))
+  (list
+   (camera-pos cam)
+   (vec+ (camera-n cam)
+         (smul (/ (:u uv) (camera-f cam))
+               (camera-u cam))
+         (smul (/ (:v uv) (camera-f cam))
+               (camera-v cam)))))
 
+
+;; Find the best intersection point of two rays: the point midway on
+;; the line of closest approach
+(define (ray-intersect ray1 ray2)
+  (let ([p1 (car ray1)]
+        [r1 (cadr ray1)]
+        [p2 (car ray2)]
+        [r2 (cadr ray2)])
+    (let ([r (vec- p1 p2)])
+      (let ([a (dot r1 r1)]
+            [b (dot r1 r2)]
+            [c (dot r2 r2)]
+            [d (dot r1 r)]
+            [e (dot r2 r)])
+        (let ([f (- (* a c) (* b b))]) ; This is (r1 x r2)^2, and is < 0.01 if the rays are less than 10 degrees apart
+          (and (> f 0.01)
+               (let ([t (/ (- (* b e) (* c d))
+                           f)]
+                     [s (/ (- (* a e) (* b d))
+                           f)])
+                 (smul 0.5
+                       (vec+ p1 (smul t r1) p2 (smul s r2))))))))))
 
 
 ;; ----------------------------------------------------------------------
@@ -138,6 +178,11 @@
 ;; What we are calling u, n, and v 
 (define (rotation-matrix->unit-vectors R)
   (map matrix->list (matrix-cols R)))
+
+;; In the order u,n, v
+;; The unit vectors are the columns of the rotation matrix
+(define (unit-vectors->rotation-matrix vs)
+  (matrix-augment (map ->col-matrix vs)))
 
 ;; 
 

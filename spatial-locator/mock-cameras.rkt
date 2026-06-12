@@ -24,7 +24,7 @@
                       (car (camera-pos camera/right)))
                    2.0))
 
-(define *amplitude* 2.0)
+(define *amplitude* 1.0)
 (define *period* 10.0) ; in seconds
 (define *nticks* 100) ; number of updates per period
 
@@ -48,7 +48,7 @@
                 [re-lc (world->camera (list (+ x (/ *pd* 2)) *eye-y* *eye-z*) camera/left)]
                 [le-rc (world->camera (list (- x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)]
                 [re-rc (world->camera (list (+ x (/ *pd* 2)) *eye-y* *eye-z*) camera/right)])
-            (display ".")
+            ;; (display ".")
             ;; (ws-send! the-server
             ;;           (head-location/json x *eye-y* *eye-z*))
             (ws-send! the-server

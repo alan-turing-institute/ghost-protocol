@@ -4,7 +4,8 @@
                   vec+ 
                   x+ y+ z+))
 
-(provide SCREEN_BL SCREEN_BR SCREEN_TR SCREEN_TL
+(provide SCREEN_WIDTH SCREEN_HEIGHT
+         SCREEN_BL SCREEN_BR SCREEN_TR SCREEN_TL
          RECEPTION
          BAR
          FIRST_AID
@@ -28,6 +29,6 @@
 (define FIRST_AID  '(2.06 9.12 1.61))
 (define CCTV       '(1.14 3.66 2.48))
 (define FLOOR_MARK '(1.84 3.71 0.0))
-(define ENTRANCE   '(1.77 2.22 0.0))
+(define ENTRANCE   '(1.77 9.4 2.22))
 
 
