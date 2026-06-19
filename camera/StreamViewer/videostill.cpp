@@ -6,6 +6,7 @@ VideoStill::VideoStill(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
     m_image = QImage("/home/flypig/Pictures/Webcam/2022-01-22-215617.jpg");
+    m_imageBox = QRectF();
 }
 
 void VideoStill::updateImage() {
@@ -31,6 +32,7 @@ void VideoStill::paint(QPainter* painter)
     float xoffset;
     float yoffset;
     QVector2D point;
+    QRectF imageBox;
 
     width = this->width();
     height = ((float)m_image.height() / (float)m_image.width()) * this->width();
@@ -44,7 +46,9 @@ void VideoStill::paint(QPainter* painter)
         yoffset = 0.0;
     }
 
-    painter->drawImage(QRectF(xoffset, yoffset, width, height), m_image);
+    imageBox = QRectF(xoffset, yoffset, width, height);
+    painter->drawImage(imageBox, m_image);
+    setImageBox(imageBox);
 
     // Reception
     renderPoint(painter, QVector3D(-0.32, 7.26, 1.1), "Reception");
@@ -133,4 +137,17 @@ void VideoStill::adjustCameraPosition(float x, float y)
     m_project.adjustCameraPosition(x, y);
     m_project.outputCameraInfo();
     this->update();
+}
+
+QRectF VideoStill::imageBox() const
+{
+    return m_imageBox;
+}
+
+void VideoStill::setImageBox(QRectF imageBox)
+{
+    if (m_imageBox != imageBox) {
+        m_imageBox = imageBox;
+        emit imageBoxChanged();
+    }
 }

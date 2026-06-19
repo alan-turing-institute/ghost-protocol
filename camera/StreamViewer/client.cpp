@@ -17,7 +17,7 @@ void Client::readyRead()
         QByteArray lengthData;
         lengthData = m_socket->read(4);
         m_length = ((uint8_t)lengthData[0] << 24) + ((uint8_t)lengthData[1] << 16) + ((uint8_t)lengthData[2] << 8) + ((uint8_t)lengthData[3]);
-        qDebug() << "Data length:" << m_length;
+        //qDebug() << "Data length:" << m_length;
     }
 
     m_data += m_socket->read(m_length - m_data.length());
@@ -32,7 +32,7 @@ void Client::readyRead()
         m_socket->write("Done\n");
         m_length = 0;
         m_data.clear();
-        qDebug() << "Size:" << image.width() << image.height();
+        //qDebug() << "Size:" << image.width() << image.height();
     }
 }
 

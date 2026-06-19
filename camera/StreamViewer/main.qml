@@ -48,12 +48,21 @@ Window {
                 break;
             }
         }
+
+        Rectangle {
+            color: "transparent"
+            border.color: "green"
+            border.width: 8
+            x: parent.imageBox.x + (wsClient.faceBox.x * parent.imageBox.width)
+            y: parent.imageBox.y + (wsClient.faceBox.y * parent.imageBox.height)
+            width: (wsClient.faceBox.width * parent.imageBox.width)
+            height: (wsClient.faceBox.height * parent.imageBox.height)
+        }
     }
     Connections {
         target: client
         function onImageChanged() {
             videoStill.still = client.image;
-            console.log("Image updated");
         }
     }
 }

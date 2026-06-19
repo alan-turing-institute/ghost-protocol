@@ -54,6 +54,7 @@ target_compile_definitions(StreamViewer
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(StreamViewer
   PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick)
+target_link_libraries(StreamViewer PRIVATE Qt5::WebSockets)
 
 set_target_properties(StreamViewer PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
