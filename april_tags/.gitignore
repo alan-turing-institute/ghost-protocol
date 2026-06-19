@@ -1,0 +1,4 @@
+# Generated at runtime
+tag*.png
+camera*.json
+calib_images/

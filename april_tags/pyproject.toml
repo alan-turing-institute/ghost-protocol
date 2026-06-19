@@ -1,0 +1,103 @@
+[build-system]
+requires = ["uv_build>=0.10.9,<0.11.0"]
+build-backend = "uv_build"
+
+[project]
+name = "april_tags"
+version = "0.1.0"
+authors = [
+  { name = "Ghost Protocol", email = "me@email.com" },
+]
+description = "Estimate the 3D position of a person's head from a single AprilTag, using one camera."
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = [
+  "Development Status :: 1 - Planning",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+  "Typing :: Typed",
+]
+dependencies = [
+  # contrib build is required for the cv2.aruco AprilTag detector.
+  "opencv-contrib-python>=4.8",
+  "numpy>=1.24",
+]
+
+[project.scripts]
+april-tags = "april_tags.__main__:main"
+
+[dependency-groups]
+dev = [
+  { include-group = "test" },
+  { include-group = "lint" },
+  "pre-commit>=4.0",
+]
+test = [
+  "pytest>=8.0",
+  "pytest-cov>=6.0",
+]
+lint = [
+  "ruff>=0.15",
+  "ty>=0.0.1a7",
+]
+
+[project.urls]
+Homepage = "https://github.com/alan-turing-institute/ghost-protocol"
+"Bug Tracker" = "https://github.com/alan-turing-institute/ghost-protocol/issues"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+log_cli_level = "INFO"
+testpaths = [
+  "tests",
+]
+
+[tool.coverage]
+run.source = ["april_tags"]
+
+[tool.ty.environment]
+python-version = "3.12"
+
+[tool.ty.src]
+include = ["src"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # Pyflakes
+  "I",    # isort
+  "UP",   # pyupgrade
+  "B",    # flake8-bugbear
+  "SIM",  # flake8-simplify
+  "C4",   # flake8-comprehensions
+  "PT",   # flake8-pytest-style
+  "G",    # flake8-logging-format
+  "PGH",  # pygrep-hooks
+  "RUF",  # Ruff-specific rules
+]
+ignore = ["E501"]
+unfixable = [
+  "F401",
+  "F841",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["april_tags"]
+
+[tool.ruff.format]
+docstring-code-format = true
