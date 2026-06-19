@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -17,32 +18,17 @@ public class CameraTransformUI : MonoBehaviour
     private Vector3Field _scaleField;
     private Vector3Field _rotationField;
     private Label _timestampReadout;
+    private Label _unityTimestampReadout;
+    private Label _deltaTReadout;
 
     void OnEnable()
     {
         var root = GetComponent<UIDocument>().rootVisualElement;
 
         _positionReadout = root.Q<Label>("position-readout");
-        // _offsetField     = root.Q<Vector3Field>("offset-field");
-        // _scaleField      = root.Q<Vector3Field>("scale-field");
-        // _rotationField   = root.Q<Vector3Field>("rotation-field");
-
-        // // Initialise fields from current controller values
-        // _offsetField.value   = controller.positionOffset;
-        // _scaleField.value    = controller.positionScale;
-        // _rotationField.value = controller.rotationOffset;
-
-        // // Push changes from UI → controller
-        // _offsetField.RegisterValueChangedCallback(evt =>
-        //     controller.positionOffset = evt.newValue);
-
-        // _scaleField.RegisterValueChangedCallback(evt =>
-        //     controller.positionScale = evt.newValue);
-
-        // _rotationField.RegisterValueChangedCallback(evt =>
-        //     controller.rotationOffset = evt.newValue);
-
         _timestampReadout = root.Q<Label>("timestamp-readout");
+        _unityTimestampReadout = root.Q<Label>("unity-timestamp-readout");
+        _deltaTReadout = root.Q<Label>("delta-t-readout");
     }
 
     void Update()
@@ -69,5 +55,22 @@ public class CameraTransformUI : MonoBehaviour
             if (_timestampReadout == null) return; // not ready yet, try again next frame
         }
        _timestampReadout.text = controller.LastTimestamp.ToString();
+        if (_unityTimestampReadout == null)
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            _unityTimestampReadout = root.Q<Label>("unity-timestamp-readout");
+            if (_unityTimestampReadout == null) return; // not ready yet, try again next frame
+        }
+        long unityUnixTimestampMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long deltaT = unityUnixTimestampMs - controller.LastTimestamp;
+        _unityTimestampReadout.text = unityUnixTimestampMs.ToString();
+        if (_deltaTReadout == null)
+        {
+            var root = GetComponent<UIDocument>().rootVisualElement;
+            _deltaTReadout = root.Q<Label>("delta-t-readout");
+            if (_deltaTReadout == null) return; // not ready yet, try again next frame
+        }
+       
+       _deltaTReadout.text = deltaT.ToString();
     }
 }
