@@ -832,7 +832,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6295550416947442014, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
       propertyPath: serverUrl
-      value: ws://10.10.100.91:9000
+      value: ws://localhost:9000
       objectReference: {fileID: 0}
     - target: {fileID: 6937679883424075951, guid: 78dcc8bb8ce6a471085dd32d6e5c809c, type: 3}
       propertyPath: m_LocalPosition.y

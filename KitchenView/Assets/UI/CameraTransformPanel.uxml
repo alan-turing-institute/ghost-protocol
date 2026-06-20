@@ -4,8 +4,15 @@
         <ui:VisualElement name="readout-section" style="margin-bottom: 16px; border-bottom-width: 1px; border-bottom-color: rgba(255, 255, 255, 0.1); padding-bottom: 12px;">
             <ui:Label text="CURRENT POSITION" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-bottom: 4px; letter-spacing: 1px;"/>
             <ui:Label name="position-readout" text="x: 0.000   y: 0.000   z: 0.000" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
-            <ui:Label text="LAST TIMESTAMP" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-top: 8px; margin-bottom: 4px; letter-spacing: 1px;"/>
+
+            <ui:Label text="CAMERA TIMESTAMP" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-top: 8px; margin-bottom: 4px; letter-spacing: 1px;"/>
             <ui:Label name="timestamp-readout" text="-" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
+
+            <ui:Label text="UNITY TIMESTAMP" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-top: 8px; margin-bottom: 4px; letter-spacing: 1px;"/>
+            <ui:Label name="unity-timestamp-readout" text="-" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
+
+            <ui:Label text="DELTA T (MS)" style="font-size: 10px; color: rgba(255, 255, 255, 0.3); margin-top: 8px; margin-bottom: 4px; letter-spacing: 1px;"/>
+            <ui:Label name="delta-t-readout" text="-" style="font-size: 13px; color: rgba(120, 220, 160, 0.9); -unity-font-style: italic;"/>
         </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>

@@ -1,0 +1,6 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <ui:VisualElement name="panel" style="position: absolute; top: 16px; right: 16px; width: 220px; background-color: rgba(0, 0, 0, 0.72); border-radius: 8px; padding: 16px;">
+        <ui:Label name="title" text="Screen Profile" style="font-size: 13px; color: rgba(255, 255, 255, 0.45); -unity-font-style: bold; margin-bottom: 12px; letter-spacing: 1px;"/>
+        <ui:DropdownField name="screen-type-dropdown" label="" index="0" choices="Big Screen,Laptop,TV Screen" style="font-size: 13px;"/>
+    </ui:VisualElement>
+</ui:UXML>

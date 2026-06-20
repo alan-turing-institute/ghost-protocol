@@ -253,7 +253,7 @@ Transform:
   m_GameObject: {fileID: 2393187021501444563}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 2.78, y: 0, z: -0.76}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -511,7 +511,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   serverUrl: ws://localhost:8080
-  defaultMoveSpeed: 5
+  positionOffset: {x: 0, y: 0, z: 0}
+  positionScale: {x: 1, y: 1, z: 1}
+  rotationOffset: {x: 0, y: 0, z: 0}
+  doSmoothing: 1
 --- !u!1 &4483102515784746991
 GameObject:
   m_ObjectHideFlags: 0
