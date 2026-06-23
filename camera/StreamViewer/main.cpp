@@ -4,6 +4,7 @@
 
 #include "videostill.h"
 #include "client.h"
+#include "wsclient.h"
 
 int main(int argc, char *argv[])
 {
@@ -15,6 +16,7 @@ int main(int argc, char *argv[])
     qmlRegisterType<VideoStill>("uk.ac.turing.view", 1, 0, "VideoStill");
 
     Client client;
+    WsClient wsClient;
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
@@ -24,6 +26,7 @@ int main(int argc, char *argv[])
             QCoreApplication::exit(-1);
     }, Qt::QueuedConnection);
     engine.rootContext()->setContextProperty("client", &client);
+    engine.rootContext()->setContextProperty("wsClient", &wsClient);
     engine.load(url);
 
     return app.exec();

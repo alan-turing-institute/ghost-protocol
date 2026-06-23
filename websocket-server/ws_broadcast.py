@@ -38,7 +38,7 @@ async def serve(port):
     print(f"  Local:   ws://localhost:{port}")
     print(f"  Network: ws://{local_ip}:{port}")
     print()
-    async with websockets.serve(handler, "0.0.0.0", port):
+    async with websockets.serve(handler, "0.0.0.0", port, ping_interval=None):
         await asyncio.Future()
 
 
