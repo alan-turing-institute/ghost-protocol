@@ -15,6 +15,11 @@ consume the same size-prefixed JPEG TCP feed as
 
 from __future__ import annotations
 
+import sys
+
+import json
+import websockets.sync.client
+
 import socket
 import struct
 import threading
@@ -27,6 +32,8 @@ import cv2
 import numpy as np
 
 from april_tags.config import CameraIntrinsics, HeadOffset, TagConfig
+
+SERVER_URL = "ws://localhost:9000"
 
 _STREAM_DONE = object()  # sentinel pushed to queues when a worker exits
 
@@ -257,6 +264,17 @@ def _default_on_head(pose: HeadPose) -> None:
         f"dist={pose.distance_m:.3f} m"
     )
 
+def send_position(pose: HeadPose, ws) -> None:
+    """Send position and timestamp to websockets server"""
+    x, y, z = pose.head_xyz
+    msg = {
+        "headLocation": {
+            "location": [x, y, z],
+            "timestamp": pose.timestamp_ms
+        }
+    }
+    ws.send(json.dumps(msg))
+
 
 def run_stream(
     intrinsics: CameraIntrinsics,
@@ -270,6 +288,10 @@ def run_stream(
 
     Press 'q' in the preview window to quit.
     """
+    # connect to websockets server
+    ws = websockets.sync.client.connect(SERVER_URL)
+
+
     on_head = on_head or _default_on_head
     active_tag = tag or TagConfig()
     estimator = HeadPoseEstimator(intrinsics, tag, offset)
@@ -291,6 +313,7 @@ def run_stream(
             frame_count += 1
             if pose is not None:
                 on_head(pose)
+                send_position(pose, ws)
             if show:
                 display = (
                     annotate(frame, pose, intrinsics)

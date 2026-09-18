@@ -28,6 +28,7 @@ dependencies = [
   # contrib build is required for the cv2.aruco AprilTag detector.
   "opencv-contrib-python>=4.8",
   "numpy>=1.24",
+  "websockets>=17.1",
 ]
 
 [project.scripts]
