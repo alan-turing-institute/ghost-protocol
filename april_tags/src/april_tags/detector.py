@@ -273,7 +273,8 @@ def send_position(pose: HeadPose, ws) -> None:
             "timestamp": pose.timestamp_ms
         }
     }
-    ws.send(json.dumps(msg))
+    if ws:
+        ws.send(json.dumps(msg))
 
 
 def run_stream(
@@ -289,9 +290,11 @@ def run_stream(
     Press 'q' in the preview window to quit.
     """
     # connect to websockets server
-    ws = websockets.sync.client.connect(SERVER_URL)
-
-
+    try:
+        ws = websockets.sync.client.connect(SERVER_URL)
+    except:
+        print(f"Unable to connect to websocket server at {SERVER_URL}")
+        ws = None
     on_head = on_head or _default_on_head
     active_tag = tag or TagConfig()
     estimator = HeadPoseEstimator(intrinsics, tag, offset)
