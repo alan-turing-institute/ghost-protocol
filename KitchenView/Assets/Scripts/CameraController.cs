@@ -19,7 +19,7 @@ public class HeadLocation
 public class CameraController : MonoBehaviour
 {
     [Header("WebSocket")]
-    public string serverUrl = "ws://localhost:8080";
+    public string serverUrl = "ws://localhost:9000";
  
     [Header("Translation offset (Unity units)")]
     public Vector3 positionOffset = Vector3.zero;
